@@ -46,4 +46,49 @@ export const getDashboard = (companyId) => api.get(`/companies/${companyId}/dash
 // Seed
 export const seedData = (companyId) => api.post(`/seed/${companyId}`);
 
+// Expenses
+export const getExpenses = (companyId, category) => {
+  const params = category ? `?category=${category}` : '';
+  return api.get(`/companies/${companyId}/expenses${params}`);
+};
+export const createExpense = (companyId, data) => api.post(`/companies/${companyId}/expenses`, data);
+export const getExpense = (companyId, expenseId) => api.get(`/companies/${companyId}/expenses/${expenseId}`);
+
+// Inventory
+export const getInventory = (companyId, category) => {
+  const params = category ? `?category=${category}` : '';
+  return api.get(`/companies/${companyId}/inventory${params}`);
+};
+export const createInventoryItem = (companyId, data) => api.post(`/companies/${companyId}/inventory`, data);
+export const getInventoryItem = (companyId, itemId) => api.get(`/companies/${companyId}/inventory/${itemId}`);
+export const adjustStock = (companyId, itemId, data) => api.post(`/companies/${companyId}/inventory/${itemId}/adjust`, data);
+export const getInventoryValuation = (companyId) => api.get(`/companies/${companyId}/inventory-valuation`);
+
+// Accounts
+export const getReceivables = (companyId) => api.get(`/companies/${companyId}/receivables`);
+export const getPayables = (companyId) => api.get(`/companies/${companyId}/payables`);
+
+// Reports
+export const getProfitLoss = (companyId, startDate, endDate) => {
+  const params = new URLSearchParams();
+  if (startDate) params.append('start_date', startDate);
+  if (endDate) params.append('end_date', endDate);
+  const qs = params.toString() ? `?${params.toString()}` : '';
+  return api.get(`/companies/${companyId}/reports/profit-loss${qs}`);
+};
+export const getSalesReport = (companyId, startDate, endDate) => {
+  const params = new URLSearchParams();
+  if (startDate) params.append('start_date', startDate);
+  if (endDate) params.append('end_date', endDate);
+  const qs = params.toString() ? `?${params.toString()}` : '';
+  return api.get(`/companies/${companyId}/reports/sales${qs}`);
+};
+export const getExpenseReport = (companyId, startDate, endDate) => {
+  const params = new URLSearchParams();
+  if (startDate) params.append('start_date', startDate);
+  if (endDate) params.append('end_date', endDate);
+  const qs = params.toString() ? `?${params.toString()}` : '';
+  return api.get(`/companies/${companyId}/reports/expenses${qs}`);
+};
+
 export default api;

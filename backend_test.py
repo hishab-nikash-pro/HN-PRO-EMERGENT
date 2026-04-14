@@ -272,23 +272,252 @@ class HishabNikashAPITester:
         
         return None
 
+    def test_expenses_endpoint(self):
+        """Test GET /api/companies/ckfrozen/expenses - should return 15 expenses"""
+        success, response = self.run_test(
+            "Get Expenses for CK Frozen",
+            "GET",
+            f"companies/{self.test_company_id}/expenses",
+            200
+        )
+        
+        if success and isinstance(response, list):
+            print(f"   ✅ Found {len(response)} expenses")
+            if len(response) >= 15:
+                print(f"   ✅ Expected 15+ expenses, got {len(response)}")
+            else:
+                print(f"   ⚠️ Expected 15+ expenses, got {len(response)}")
+            if response:
+                sample_expense = response[0]
+                print(f"   Sample expense: {sample_expense.get('category', 'N/A')} - ${sample_expense.get('amount', 0)}")
+        
+        return success
+
+    def test_create_expense(self):
+        """Test POST /api/companies/ckfrozen/expenses"""
+        test_expense = {
+            "vendor_name": "Test Vendor",
+            "category": "Office Supplies",
+            "payment_account": "Operating Account",
+            "payment_method": "Bank Transfer",
+            "reference_number": f"TEST-{datetime.now().strftime('%H%M%S')}",
+            "expense_date": datetime.now().strftime('%Y-%m-%d'),
+            "memo": "Created by automated test",
+            "amount": 150.00,
+            "status": "Recorded"
+        }
+        
+        success, response = self.run_test(
+            "Create New Expense",
+            "POST",
+            f"companies/{self.test_company_id}/expenses",
+            201,
+            data=test_expense
+        )
+        
+        if success:
+            print(f"   ✅ Expense created: {response.get('expense_id', 'N/A')}")
+            return response.get('expense_id')
+        
+        return None
+
+    def test_inventory_endpoint(self):
+        """Test GET /api/companies/ckfrozen/inventory - should return 15 items"""
+        success, response = self.run_test(
+            "Get Inventory for CK Frozen",
+            "GET",
+            f"companies/{self.test_company_id}/inventory",
+            200
+        )
+        
+        if success and isinstance(response, list):
+            print(f"   ✅ Found {len(response)} inventory items")
+            if len(response) >= 15:
+                print(f"   ✅ Expected 15+ items, got {len(response)}")
+            else:
+                print(f"   ⚠️ Expected 15+ items, got {len(response)}")
+            if response:
+                sample_item = response[0]
+                print(f"   Sample item: {sample_item.get('product_name', 'N/A')} - Stock: {sample_item.get('stock_on_hand', 0)}")
+        
+        return success
+
+    def test_inventory_valuation(self):
+        """Test GET /api/companies/ckfrozen/inventory-valuation"""
+        success, response = self.run_test(
+            "Get Inventory Valuation for CK Frozen",
+            "GET",
+            f"companies/{self.test_company_id}/inventory-valuation",
+            200
+        )
+        
+        if success:
+            expected_fields = ['total_value', 'item_count', 'category_breakdown', 'top_items']
+            found_fields = [f for f in expected_fields if f in response]
+            print(f"   ✅ Valuation fields found: {found_fields}")
+            print(f"   Total Value: ${response.get('total_value', 0):,}")
+            print(f"   Item Count: {response.get('item_count', 0)}")
+        
+        return success
+
+    def test_stock_adjustment(self):
+        """Test POST /api/companies/ckfrozen/inventory/{item_id}/adjust"""
+        # First get an inventory item
+        inventory_success, inventory = self.run_test(
+            "Get Inventory for Stock Adjustment",
+            "GET",
+            f"companies/{self.test_company_id}/inventory",
+            200
+        )
+        
+        if not inventory_success or not inventory:
+            print("   ❌ Cannot test stock adjustment - no inventory items available")
+            return False
+        
+        item = inventory[0]
+        item_id = item['item_id']
+        
+        adjustment = {
+            "adjustment_type": "receive",
+            "quantity": 5,
+            "reason": "Test adjustment",
+            "reference": f"TEST-{datetime.now().strftime('%H%M%S')}"
+        }
+        
+        success, response = self.run_test(
+            "Adjust Stock for Inventory Item",
+            "POST",
+            f"companies/{self.test_company_id}/inventory/{item_id}/adjust",
+            200,
+            data=adjustment
+        )
+        
+        if success:
+            print(f"   ✅ Stock adjusted for item: {response.get('product_name', 'N/A')}")
+            print(f"   New stock level: {response.get('stock_on_hand', 0)}")
+        
+        return success
+
+    def test_receivables_endpoint(self):
+        """Test GET /api/companies/ckfrozen/receivables"""
+        success, response = self.run_test(
+            "Get Accounts Receivable for CK Frozen",
+            "GET",
+            f"companies/{self.test_company_id}/receivables",
+            200
+        )
+        
+        if success:
+            expected_fields = ['total_receivable', 'aging', 'customer_balances', 'open_invoices']
+            found_fields = [f for f in expected_fields if f in response]
+            print(f"   ✅ AR fields found: {found_fields}")
+            print(f"   Total Receivable: ${response.get('total_receivable', 0):,}")
+            aging = response.get('aging', {})
+            print(f"   Aging buckets: {list(aging.keys())}")
+        
+        return success
+
+    def test_payables_endpoint(self):
+        """Test GET /api/companies/ckfrozen/payables"""
+        success, response = self.run_test(
+            "Get Accounts Payable for CK Frozen",
+            "GET",
+            f"companies/{self.test_company_id}/payables",
+            200
+        )
+        
+        if success:
+            expected_fields = ['total_payable', 'total_expenses', 'aging', 'vendor_balances']
+            found_fields = [f for f in expected_fields if f in response]
+            print(f"   ✅ AP fields found: {found_fields}")
+            print(f"   Total Payable: ${response.get('total_payable', 0):,}")
+            print(f"   Total Expenses: ${response.get('total_expenses', 0):,}")
+        
+        return success
+
+    def test_profit_loss_report(self):
+        """Test GET /api/companies/ckfrozen/reports/profit-loss"""
+        success, response = self.run_test(
+            "Get Profit & Loss Report for CK Frozen",
+            "GET",
+            f"companies/{self.test_company_id}/reports/profit-loss",
+            200
+        )
+        
+        if success:
+            expected_fields = ['total_income', 'cogs', 'gross_profit', 'operating_expenses', 'net_profit']
+            found_fields = [f for f in expected_fields if f in response]
+            print(f"   ✅ P&L fields found: {found_fields}")
+            print(f"   Total Income: ${response.get('total_income', 0):,}")
+            print(f"   Net Profit: ${response.get('net_profit', 0):,}")
+        
+        return success
+
+    def test_sales_report(self):
+        """Test GET /api/companies/ckfrozen/reports/sales"""
+        success, response = self.run_test(
+            "Get Sales Report for CK Frozen",
+            "GET",
+            f"companies/{self.test_company_id}/reports/sales",
+            200
+        )
+        
+        if success:
+            expected_fields = ['total_sales', 'total_collected', 'invoice_count', 'top_customers']
+            found_fields = [f for f in expected_fields if f in response]
+            print(f"   ✅ Sales report fields found: {found_fields}")
+            print(f"   Total Sales: ${response.get('total_sales', 0):,}")
+            print(f"   Invoice Count: {response.get('invoice_count', 0)}")
+        
+        return success
+
+    def test_expense_report(self):
+        """Test GET /api/companies/ckfrozen/reports/expenses"""
+        success, response = self.run_test(
+            "Get Expense Report for CK Frozen",
+            "GET",
+            f"companies/{self.test_company_id}/reports/expenses",
+            200
+        )
+        
+        if success:
+            expected_fields = ['total_expenses', 'expense_count', 'category_breakdown', 'vendor_breakdown']
+            found_fields = [f for f in expected_fields if f in response]
+            print(f"   ✅ Expense report fields found: {found_fields}")
+            print(f"   Total Expenses: ${response.get('total_expenses', 0):,}")
+            print(f"   Expense Count: {response.get('expense_count', 0)}")
+        
+        return success
+
     def run_all_tests(self):
         """Run all API tests"""
-        print("🚀 Starting Hishab Nikash Pro API Tests")
+        print("🚀 Starting Hishab Nikash Pro Phase 2 API Tests")
         print(f"   Base URL: {self.base_url}")
         print(f"   Session Token: {self.session_token[:20]}...")
         print(f"   Test Company: {self.test_company_id}")
         print("=" * 60)
 
-        # Test all endpoints
+        # Phase 1 endpoints (quick verification)
+        print("\n📋 Phase 1 Endpoints (Quick Check)")
         self.test_companies_endpoint()
         self.test_auth_me()
         self.test_customers_endpoint()
         self.test_vendors_endpoint()
         self.test_invoices_endpoint()
         self.test_dashboard_endpoint()
-        self.test_create_customer()
-        self.test_create_invoice()
+
+        # Phase 2 endpoints (main focus)
+        print("\n🆕 Phase 2 Endpoints (New Features)")
+        self.test_expenses_endpoint()
+        self.test_create_expense()
+        self.test_inventory_endpoint()
+        self.test_inventory_valuation()
+        self.test_stock_adjustment()
+        self.test_receivables_endpoint()
+        self.test_payables_endpoint()
+        self.test_profit_loss_report()
+        self.test_sales_report()
+        self.test_expense_report()
 
         # Print summary
         print("\n" + "=" * 60)

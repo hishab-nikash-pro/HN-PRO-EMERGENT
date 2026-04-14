@@ -13,6 +13,17 @@ import CustomersList from './pages/CustomersList';
 import CustomerDetail from './pages/CustomerDetail';
 import VendorsList from './pages/VendorsList';
 import VendorDetail from './pages/VendorDetail';
+import ExpensesList from './pages/ExpensesList';
+import AddExpense from './pages/AddExpense';
+import InventoryList from './pages/InventoryList';
+import InventoryDetail from './pages/InventoryDetail';
+import InventoryValuation from './pages/InventoryValuation';
+import AccountsReceivable from './pages/AccountsReceivable';
+import AccountsPayable from './pages/AccountsPayable';
+import ReportsHub from './pages/ReportsHub';
+import ProfitLoss from './pages/ProfitLoss';
+import SalesReport from './pages/SalesReport';
+import ExpenseReport from './pages/ExpenseReport';
 import './App.css';
 
 function AppRouter() {
@@ -54,12 +65,40 @@ function AppRouter() {
       <Route path="/vendors/:vendorId" element={
         <ProtectedRoute><VendorDetail /></ProtectedRoute>
       } />
-      {/* Placeholder routes for Phase 2/3 */}
-      <Route path="/expenses" element={<ProtectedRoute><PlaceholderPage title="Expenses" desc="Expense tracking and management — Coming in Phase 2" /></ProtectedRoute>} />
-      <Route path="/inventory" element={<ProtectedRoute><PlaceholderPage title="Inventory" desc="Inventory management for wholesale distribution — Coming in Phase 2" /></ProtectedRoute>} />
-      <Route path="/receivables" element={<ProtectedRoute><PlaceholderPage title="Accounts Receivable" desc="Customer balance tracking and aging — Coming in Phase 2" /></ProtectedRoute>} />
-      <Route path="/payables" element={<ProtectedRoute><PlaceholderPage title="Accounts Payable" desc="Vendor payment tracking and scheduling — Coming in Phase 2" /></ProtectedRoute>} />
-      <Route path="/reports" element={<ProtectedRoute><PlaceholderPage title="Reports" desc="Financial reports and analytics — Coming in Phase 2" /></ProtectedRoute>} />
+      <Route path="/expenses" element={
+        <ProtectedRoute><ExpensesList /></ProtectedRoute>
+      } />
+      <Route path="/expenses/new" element={
+        <ProtectedRoute><AddExpense /></ProtectedRoute>
+      } />
+      <Route path="/inventory" element={
+        <ProtectedRoute><InventoryList /></ProtectedRoute>
+      } />
+      <Route path="/inventory/valuation" element={
+        <ProtectedRoute><InventoryValuation /></ProtectedRoute>
+      } />
+      <Route path="/inventory/:itemId" element={
+        <ProtectedRoute><InventoryDetail /></ProtectedRoute>
+      } />
+      <Route path="/receivables" element={
+        <ProtectedRoute><AccountsReceivable /></ProtectedRoute>
+      } />
+      <Route path="/payables" element={
+        <ProtectedRoute><AccountsPayable /></ProtectedRoute>
+      } />
+      <Route path="/reports" element={
+        <ProtectedRoute><ReportsHub /></ProtectedRoute>
+      } />
+      <Route path="/reports/profit-loss" element={
+        <ProtectedRoute><ProfitLoss /></ProtectedRoute>
+      } />
+      <Route path="/reports/sales" element={
+        <ProtectedRoute><SalesReport /></ProtectedRoute>
+      } />
+      <Route path="/reports/expenses" element={
+        <ProtectedRoute><ExpenseReport /></ProtectedRoute>
+      } />
+      {/* Placeholder routes for Phase 3 */}
       <Route path="/ai-assistant" element={<ProtectedRoute><PlaceholderPage title="AI Assistant" desc="Business intelligence copilot powered by GPT — Coming in Phase 3" /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><PlaceholderPage title="Settings" desc="Company settings, user roles, and configuration — Coming in Phase 3" /></ProtectedRoute>} />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
