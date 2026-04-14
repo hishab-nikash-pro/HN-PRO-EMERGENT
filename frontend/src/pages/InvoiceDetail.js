@@ -117,7 +117,7 @@ export default function InvoiceDetail() {
                 </button>
               </>
             )}
-            <button onClick={() => navigate(`/sales/${invoiceId}/print`)} className="p-2 rounded-lg hover:bg-white transition-colors" style={{ color: '#434655' }}><Printer size={18} /></button>
+            <button onClick={() => navigate(`/sales/${invoiceId}/print`)} data-testid="print-invoice-btn" className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[#F2F4F6]" style={{ color: '#434655', boxShadow: '0 0 0 1px #C4C5D7' }}><Printer size={16} /> Print</button>
             <button className="p-2 rounded-lg hover:bg-white transition-colors" style={{ color: '#434655' }}><Copy size={18} /></button>
             {invoice.status !== 'Cancelled' && invoice.status !== 'Paid' && (
               <button onClick={handleCancel} className="p-2 rounded-lg hover:bg-[#fef2f2] transition-colors" style={{ color: '#BA1A1A' }}><X size={18} /></button>
