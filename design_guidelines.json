@@ -1,0 +1,87 @@
+{
+  "project_name": "Hishab Nikash Pro",
+  "theme": "Light",
+  "archetype": "Swiss & High-Contrast (Corporate Accounting Variant)",
+  "colors": {
+    "primary": "#0037B0",
+    "primary_container": "#1D4ED8",
+    "surface": "#F7F9FB",
+    "surface_low": "#F2F4F6",
+    "white_card": "#FFFFFF",
+    "surface_high": "#E6E8EA",
+    "text_main": "#191C1E",
+    "text_muted": "#434655",
+    "outline_variant": "#C4C5D7",
+    "secondary_accent": "#4D5B94",
+    "warning": "#7F2500",
+    "error": "#BA1A1A"
+  },
+  "typography": {
+    "heading_font": "Manrope",
+    "body_font": "Inter",
+    "font_setup": "Import via Google Fonts. Manrope for titles/large financial numbers. Inter for body text/labels/forms/tables."
+  },
+  "layout": {
+    "architecture": "desktop-first, left fixed sidebar, top sticky header",
+    "sidebar": "w-64 fixed inset-y-0 left-0 bg-[#F2F4F6] flex flex-col justify-between",
+    "header": "sticky top-0 z-40 h-16 bg-[#F7F9FB] flex items-center justify-between px-6",
+    "main_content": "ml-64 min-h-screen bg-[#F7F9FB] p-8",
+    "spacing": "Spacious padding, generous gaps between sections to communicate high-end trust."
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-gradient-to-r from-[#0037B0] to-[#1D4ED8] text-white rounded-md px-4 py-2 font-medium hover:opacity-90 transition-opacity border-none cursor-pointer",
+      "secondary": "bg-transparent text-[#0037B0] border border-[#0037B0] rounded-md px-4 py-2 font-medium hover:bg-[#F2F4F6] transition-colors cursor-pointer",
+      "pills": "rounded-full px-3 py-1 text-xs font-semibold"
+    },
+    "cards": {
+      "default": "bg-[#FFFFFF] rounded-2xl border-none shadow-sm p-6"
+    },
+    "tables": {
+      "container": "w-full text-left text-sm whitespace-nowrap overflow-x-auto",
+      "header": "bg-[#F7F9FB] text-[#434655] border-b border-[#C4C5D7] sticky top-0 font-medium",
+      "row": "even:bg-[#F2F4F6]/50 border-none hover:bg-[#F7F9FB] transition-colors group",
+      "cell": "px-4 py-3 align-middle",
+      "numeric_column": "text-right font-heading font-semibold text-[#191C1E] tabular-nums",
+      "rules": "No vertical table dividers. Clean header, right aligned amounts, zebra striping, compact but readable."
+    },
+    "inputs": {
+      "default": "bg-[#FFFFFF] border border-[#C4C5D7] rounded-md px-3 py-2 text-sm text-[#191C1E] placeholder:text-[#434655]/60 focus:outline-none focus:ring-1 focus:ring-[#0037B0]"
+    }
+  },
+  "non_negotiable_rules": [
+    "No pure black #000000. Darkest text must be #191C1E.",
+    "No random gradients except the main CTA buttons (#0037B0 to #1D4ED8).",
+    "No strong hard borders for section separation. Use surface changes (e.g. #F2F4F6 to #FFFFFF).",
+    "No vertical table dividers.",
+    "No flashy shadows. Rely on flat tonal layers and 1px borders if necessary.",
+    "No inconsistent border radius (cards 12-16px, buttons medium rounded, pills fully rounded).",
+    "Main app background must be #F7F9FB, Sidebar/grouped sections must be #F2F4F6, Cards/forms/tables must be white.",
+    "Desktop-first approach.",
+    "Include subtle badge 'Hishab Nikash Pro — Powered by iAlam'.",
+    "All interactive elements MUST include data-testid attribute."
+  ],
+  "icon_library": "@phosphor-icons/react",
+  "media": {
+    "image_urls": [
+      {
+        "category": "login_background",
+        "description": "Clean, architectural glass building suitable for professional enterprise software login screen.",
+        "url": "https://images.unsplash.com/photo-1682531369805-344a8c91aa04?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBnbGFzcyUyMG9mZmljZSUyMGJ1aWxkaW5nJTIwYWJzdHJhY3R8ZW58MHx8fHwxNzc2MTMwMTU5fDA&ixlib=rb-4.1.0&q=85"
+      }
+    ]
+  },
+  "instructions_to_main_agent": [
+    "Implement a precise, high-end corporate accounting system. Do NOT treat this as a startup landing page.",
+    "Use Javascript (.js/.jsx) for all components and pages, NOT TypeScript (.ts/.tsx).",
+    "Configure Tailwind config exactly with the provided hex colors under 'theme.colors'. Disable pure black entirely.",
+    "Install Google Fonts 'Manrope' (headings, numbers) and 'Inter' (body, UI).",
+    "Install '@phosphor-icons/react' for all iconography.",
+    "If using Shadcn components, you MUST aggressively override their default styles to match the border rules (no hard borders, rely on surface changes) and card rules (12-16px radius, no heavy shadows).",
+    "Ensure the layout strictly follows: Fixed left sidebar (#F2F4F6), sticky top header (#F7F9FB), main content area (#F7F9FB), and white cards (#FFFFFF).",
+    "Implement numeric columns in tables with 'text-right tabular-nums font-heading' to ensure decimal alignment for currency.",
+    "Add 'data-testid' to all buttons, links, and forms.",
+    "Build out the multi-company switcher in the header or top of sidebar.",
+    "For Phase 1 pages (Dashboard, Sales List, Create Invoice, etc.), ensure high consistency. Never invent new color palettes."
+  ]
+}
