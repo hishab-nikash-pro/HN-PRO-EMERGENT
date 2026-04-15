@@ -55,25 +55,29 @@ Build a real, production-style, multi-company accounting and operations web appl
 - [x] 15 seeded inventory items with realistic frozen food SKUs
 - [x] All Phase 2 backend APIs (17 endpoints, 100% pass rate)
 
-## What's Been Implemented (Post Phase 2 - April 14, 2026)
-- [x] Products catalog page (CRUD - name, description, cost price, selling price, case price, weight info)
-- [x] 15 seeded products matching real CK Frozen Fish & Food product line (Hilsha, Pangash, Rohu, etc.)
-- [x] Invoice Print template matching CK Frozen Fish & Food Inc. actual invoice layout (A4 format)
-- [x] Low-stock email alerts via Resend (sends to ckfrozenfishus@gmail.com)
-- [x] Alert button on Inventory page triggers email for items below reorder point
-- [x] Products nav item added to sidebar
+## What's Been Implemented (Phase 3 - April 14, 2026)
+- [x] AI Assistant with GPT-5.2 (chat workspace, suggestion cards, session history)
+- [x] AI Invoice from Image (upload invoice image, GPT extracts data, auto-fills invoice form)
+- [x] Settings page with 5 tabs (Company, Invoice, Team & Roles, Alerts, CSV Import)
+- [x] User roles & permissions (Owner/Admin/Accountant/Sales/Warehouse/Viewer)
+- [x] Employee registration & approval workflow
+- [x] CSV Import for Customers, Vendors, and Products (QuickBooks compatible)
+- [x] Scheduled daily low-stock alert (checks all companies, sends email)
+- [x] Invoice product selection fixed (dropdown from product catalog with auto-price)
+- [x] Date filter presets on Sales (Today/Yesterday/This Week/Last Week/This Month/Last Month/This Year/Last Year)
+- [x] Invoice customization settings (prefix, starting number, footer, terms)
+- [x] Mobile responsive layout (collapsible sidebar, responsive grids, mobile menu)
+- [x] Print invoice template with CK Frozen Fish layout (A4 format)
 
 ## Prioritized Backlog
 
-### P0 (Phase 3 - Next)
-- AI Assistant (GPT-5.2 powered business copilot)
-- Settings/Admin (company settings, user roles, tax settings)
-- Print templates (Invoice, Packing List, Customer Statement)
-- Email service for invoice sending
+### P0 (Next Priorities)
+- Packing List and Customer Statement print templates
+- Balance Sheet and Cash Flow reports
+- Invoice email sending to customers
 
 ### P1 (Future)
-- Balance Sheet report
-- Cash Flow report
+- Automated scheduled cron (currently manual trigger)
 - Inventory reports
 - Tax reports
 - Advanced workflow polish
