@@ -69,6 +69,16 @@ Build a real, production-style, multi-company accounting and operations web appl
 - [x] Mobile responsive layout (collapsible sidebar, responsive grids, mobile menu)
 - [x] Print invoice template with CK Frozen Fish layout (A4 format)
 
+## What's Been Implemented (Final Batch - April 15, 2026)
+- [x] Balance Sheet report (Assets/Liabilities/Equity with statement view)
+- [x] Cash Flow Statement (Operating/Investing/Financing with monthly chart)
+- [x] Packing List print template (A4, item checklist, packed by/received by fields)
+- [x] Customer Statement print template (transaction history, running balance, totals)
+- [x] Automated daily cron scheduler (runs at 8 AM UTC, checks all companies, sends email)
+- [x] Reports Hub updated with Balance Sheet and Cash Flow links
+- [x] Invoice Detail has Print Invoice + Packing List buttons
+- [x] Customer Detail has Statement button
+
 ## Prioritized Backlog
 
 ### P0 (Next Priorities)
