@@ -376,6 +376,136 @@ class HishabNikashAPITester:
         
         return success
 
+    def test_balance_sheet_report(self):
+        """Test Balance Sheet report endpoint"""
+        print("\n" + "="*60)
+        print("📊 TESTING BALANCE SHEET REPORT")
+        print("="*60)
+        
+        # Test GET balance sheet
+        success, balance_sheet = self.run_test(
+            "Get Balance Sheet",
+            "GET",
+            f"companies/{self.company_id}/reports/balance-sheet",
+            200,
+            description="Get balance sheet with assets, liabilities, and equity"
+        )
+        
+        if success and balance_sheet:
+            assets = balance_sheet.get('assets', {})
+            liabilities = balance_sheet.get('liabilities', {})
+            equity = balance_sheet.get('equity', {})
+            
+            print(f"   💰 Total Assets: ${assets.get('total_assets', 0):,.2f}")
+            print(f"   📋 Total Liabilities: ${liabilities.get('total_liabilities', 0):,.2f}")
+            print(f"   🏦 Total Equity: ${equity.get('total_equity', 0):,.2f}")
+            print(f"   📅 As of Date: {balance_sheet.get('as_of_date', 'N/A')}")
+            
+            # Check if balance sheet balances
+            total_assets = assets.get('total_assets', 0)
+            total_liab_equity = balance_sheet.get('total_liabilities_and_equity', 0)
+            if abs(total_assets - total_liab_equity) < 0.01:
+                print(f"   ✅ Balance sheet balances correctly")
+            else:
+                print(f"   ⚠️  Balance sheet doesn't balance: Assets {total_assets} != Liab+Equity {total_liab_equity}")
+        
+        # Test with specific date
+        success2, balance_sheet_dated = self.run_test(
+            "Get Balance Sheet with Date",
+            "GET",
+            f"companies/{self.company_id}/reports/balance-sheet?as_of_date=2024-12-31",
+            200,
+            description="Get balance sheet as of specific date"
+        )
+        
+        return success and success2
+
+    def test_cash_flow_report(self):
+        """Test Cash Flow report endpoint"""
+        print("\n" + "="*60)
+        print("💸 TESTING CASH FLOW REPORT")
+        print("="*60)
+        
+        # Test GET cash flow
+        success, cash_flow = self.run_test(
+            "Get Cash Flow",
+            "GET",
+            f"companies/{self.company_id}/reports/cash-flow",
+            200,
+            description="Get cash flow with operating, investing, and financing activities"
+        )
+        
+        if success and cash_flow:
+            operating = cash_flow.get('operating_activities', {})
+            investing = cash_flow.get('investing_activities', {})
+            financing = cash_flow.get('financing_activities', {})
+            
+            print(f"   💰 Collections: ${operating.get('collections_from_customers', 0):,.2f}")
+            print(f"   💸 Payments: ${operating.get('payments_to_vendors', 0):,.2f}")
+            print(f"   📈 Net Operating: ${operating.get('net_operating_cash_flow', 0):,.2f}")
+            print(f"   🏦 Beginning Cash: ${cash_flow.get('beginning_cash', 0):,.2f}")
+            print(f"   🏦 Ending Cash: ${cash_flow.get('ending_cash', 0):,.2f}")
+            
+            monthly_data = cash_flow.get('monthly_data', [])
+            print(f"   📊 Monthly data points: {len(monthly_data)}")
+        
+        # Test with date range
+        success2, cash_flow_range = self.run_test(
+            "Get Cash Flow with Date Range",
+            "GET",
+            f"companies/{self.company_id}/reports/cash-flow?start_date=2024-01-01&end_date=2024-12-31",
+            200,
+            description="Get cash flow for specific date range"
+        )
+        
+        return success and success2
+
+    def test_customer_statement(self):
+        """Test Customer Statement endpoint"""
+        print("\n" + "="*60)
+        print("👤 TESTING CUSTOMER STATEMENT")
+        print("="*60)
+        
+        # First get customers to find a valid customer ID
+        success, customers = self.run_test(
+            "Get Customers for Statement",
+            "GET",
+            f"companies/{self.company_id}/customers",
+            200,
+            description="Get customers list to find valid customer ID"
+        )
+        
+        if not success or not customers:
+            print("   ❌ No customers found for statement testing")
+            return False
+        
+        # Use first customer
+        customer_id = customers[0].get('customer_id')
+        customer_name = customers[0].get('name', 'Unknown')
+        print(f"   👤 Testing statement for: {customer_name} ({customer_id})")
+        
+        # Test GET customer statement
+        success, statement = self.run_test(
+            "Get Customer Statement",
+            "GET",
+            f"companies/{self.company_id}/customers/{customer_id}/statement",
+            200,
+            description="Get customer statement with transactions and balance"
+        )
+        
+        if success and statement:
+            customer = statement.get('customer', {})
+            transactions = statement.get('transactions', [])
+            
+            print(f"   👤 Customer: {customer.get('name', 'N/A')}")
+            print(f"   💰 Total Invoiced: ${statement.get('total_invoiced', 0):,.2f}")
+            print(f"   💸 Total Paid: ${statement.get('total_paid', 0):,.2f}")
+            print(f"   📋 Balance Due: ${statement.get('balance_due', 0):,.2f}")
+            print(f"   📊 Transactions: {len(transactions)}")
+            print(f"   📅 Statement Date: {statement.get('statement_date', 'N/A')}")
+        
+        return success
+
     def test_inventory_for_alerts(self):
         """Test inventory to check for low stock items"""
         print("\n" + "="*60)
@@ -451,6 +581,21 @@ class HishabNikashAPITester:
         # Test Scheduled Alerts
         if not self.test_scheduled_alerts():
             print("\n❌ Scheduled Alerts tests failed")
+            return False
+        
+        # Test Balance Sheet Report (NEW)
+        if not self.test_balance_sheet_report():
+            print("\n❌ Balance Sheet Report tests failed")
+            return False
+        
+        # Test Cash Flow Report (NEW)
+        if not self.test_cash_flow_report():
+            print("\n❌ Cash Flow Report tests failed")
+            return False
+        
+        # Test Customer Statement (NEW)
+        if not self.test_customer_statement():
+            print("\n❌ Customer Statement tests failed")
             return False
         
         return True
