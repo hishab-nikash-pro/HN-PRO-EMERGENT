@@ -1,7 +1,6 @@
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { useState } from 'react';
-import { List } from '@phosphor-icons/react';
 
 export default function AppShell({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

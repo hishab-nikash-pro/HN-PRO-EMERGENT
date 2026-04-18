@@ -52,7 +52,7 @@ export default function ReceiveStock() {
           )}
         </div>
         {showCreate && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto py-8" style={{ background: 'rgba(25,28,30,0.5)' }}>
+          <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto py-8" style={{ background: 'rgba(25,28,30,0.5)' }}>
             <div className="rounded-2xl p-6 w-full max-w-2xl" style={{ background: '#FFFFFF' }}>
               <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Receive Stock</h3>
               <div className="grid grid-cols-3 gap-4 mb-4">

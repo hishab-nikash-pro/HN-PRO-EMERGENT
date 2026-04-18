@@ -172,7 +172,7 @@ export default function ProductsList() {
 
         {/* Create/Edit Modal */}
         {showCreateModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(25,28,30,0.5)' }}>
+          <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(25,28,30,0.5)' }}>
             <div className="rounded-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto" style={{ background: '#FFFFFF' }}>
               <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>
                 {editProduct ? 'Edit Product' : 'New Product'}

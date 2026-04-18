@@ -74,7 +74,7 @@ export default function BillsList() {
         </div>
         {/* Create Bill Modal */}
         {showCreate && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto py-8" style={{ background: 'rgba(25,28,30,0.5)' }}>
+          <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto py-8" style={{ background: 'rgba(25,28,30,0.5)' }}>
             <div className="rounded-2xl p-6 w-full max-w-xl" style={{ background: '#FFFFFF' }}>
               <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>New Bill</h3>
               <div className="grid grid-cols-2 gap-4 mb-4">
@@ -96,7 +96,7 @@ export default function BillsList() {
         )}
         {/* Pay Bill Modal */}
         {showPay && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(25,28,30,0.5)' }}>
+          <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(25,28,30,0.5)' }}>
             <div className="rounded-2xl p-6 w-full max-w-md" style={{ background: '#FFFFFF' }}>
               <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Pay Bill</h3>
               <p className="text-sm mb-4" style={{ color: '#434655' }}>{showPay.vendor_name} — Balance: <strong style={{ color: '#BA1A1A' }}>${(showPay.balance_due || 0).toFixed(2)}</strong></p>

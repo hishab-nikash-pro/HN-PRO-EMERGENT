@@ -133,7 +133,7 @@ export default function VendorsList() {
 
         {/* Create Vendor Modal */}
         {showCreateModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(25,28,30,0.5)' }}>
+          <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(25,28,30,0.5)' }}>
             <div className="rounded-2xl p-6 w-full max-w-md" style={{ background: '#FFFFFF' }}>
               <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>New Vendor</h3>
               <div className="space-y-4">
