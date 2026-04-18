@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-04-18T14:31:30.026101",
+  "timestamp": "2026-04-18T17:18:51.221740",
   "summary": {
     "tests_run": 45,
     "tests_passed": 45,
@@ -36,14 +36,14 @@
           "product_name": "Hilsha Fish (Frozen)",
           "category": "Frozen Fish",
           "warehouse": "Main Warehouse",
-          "stock_on_hand": 255.0,
+          "stock_on_hand": 305.0,
           "reserved_stock": 25,
-          "available_stock": 230.0,
+          "available_stock": 280.0,
           "unit_cost": 18.5,
           "sales_price": 24.0,
           "unit": "kg",
           "reorder_point": 37,
-          "inventory_value": 4717.5,
+          "inventory_value": 5217.5,
           "status": "Active",
           "movement_history": [
             {
@@ -62,6 +62,15 @@
               "reason": "Test adjustment",
               "reference": "TEST-175227",
               "date": "2026-04-14T17:52:28.033913+00:00",
+              "by": "test-user-1776150388162"
+            },
+            {
+              "movement_id": "mov_2f2c0362",
+              "type": "receive",
+              "quantity": 50,
+              "reason": "Stock Receipt rcpt_05c138190f",
+              "reference": "PO-TEST-001",
+              "date": "2026-04-18T14:31:29.087327+00:00",
               "by": "test-user-1776150388162"
             }
           ],
@@ -5661,7 +5670,7 @@
       "actual_status": 201,
       "success": true,
       "response_data": {
-        "product_id": "prod_028cc72213",
+        "product_id": "prod_8a6329e5d4",
         "company_id": "ckfrozen",
         "name": "Test Fish Product",
         "description": "Test product for API testing",
@@ -5674,7 +5683,7 @@
         "weight_info": "20KG CASE",
         "sku": "TEST-001",
         "status": "Active",
-        "created_at": "2026-04-18T14:31:19.005065+00:00",
+        "created_at": "2026-04-18T17:18:39.661210+00:00",
         "created_by": "test-user-1776150388162"
       },
       "error": null
@@ -5682,12 +5691,12 @@
     {
       "test_name": "Update Product",
       "method": "PUT",
-      "endpoint": "companies/ckfrozen/products/prod_028cc72213",
+      "endpoint": "companies/ckfrozen/products/prod_8a6329e5d4",
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
       "response_data": {
-        "product_id": "prod_028cc72213",
+        "product_id": "prod_8a6329e5d4",
         "company_id": "ckfrozen",
         "name": "Updated Test Fish Product",
         "description": "Updated test product",
@@ -5700,7 +5709,7 @@
         "weight_info": "20KG CASE UPDATED",
         "sku": "TEST-001-UPD",
         "status": "Active",
-        "created_at": "2026-04-18T14:31:19.005065+00:00",
+        "created_at": "2026-04-18T17:18:39.661210+00:00",
         "created_by": "test-user-1776150388162"
       },
       "error": null
@@ -5708,12 +5717,12 @@
     {
       "test_name": "Get Single Product",
       "method": "GET",
-      "endpoint": "companies/ckfrozen/products/prod_028cc72213",
+      "endpoint": "companies/ckfrozen/products/prod_8a6329e5d4",
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
       "response_data": {
-        "product_id": "prod_028cc72213",
+        "product_id": "prod_8a6329e5d4",
         "company_id": "ckfrozen",
         "name": "Updated Test Fish Product",
         "description": "Updated test product",
@@ -5726,7 +5735,7 @@
         "weight_info": "20KG CASE UPDATED",
         "sku": "TEST-001-UPD",
         "status": "Active",
-        "created_at": "2026-04-18T14:31:19.005065+00:00",
+        "created_at": "2026-04-18T17:18:39.661210+00:00",
         "created_by": "test-user-1776150388162"
       },
       "error": null
@@ -5734,7 +5743,7 @@
     {
       "test_name": "Delete Product",
       "method": "DELETE",
-      "endpoint": "companies/ckfrozen/products/prod_028cc72213",
+      "endpoint": "companies/ckfrozen/products/prod_8a6329e5d4",
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
@@ -5765,8 +5774,8 @@
       "actual_status": 200,
       "success": true,
       "response_data": {
-        "response": "## Total Sales (This Month)\nI can\u2019t calculate your total sales yet because I don\u2019t have access to your invoice/sales data in this chat.\n\n## What I need from you (pick one)\n1. **Upload/export your sales data** for this month (CSV/Excel/PDF of invoices), or  \n2. Tell me which system you use (e.g., **QuickBooks, Xero, Excel**) and paste:\n   - Invoice date\n   - Invoice total\n   - Status (paid/unpaid/void)\n   - Any credits/returns this month\n\n## Quick clarification (so the number is correct)\n- Define \u201cthis month\u201d as: **April 1\u2013today** (current month), or **last 30 days**?\n- Do you want **Gross Sales** (before credits/returns) or **Net Sales** (after credits/returns)?\n\n## If you paste invoice totals\nSend me a list like:\n- 2026-04-02 \u2014 $____\n- 2026-04-05 \u2014 $____  \n\u2026and I\u2019ll sum it and break it down by **paid vs unpaid**, **top customers**, and **average invoice size**.",
-        "session_id": "chat_9454de5695"
+        "response": "## Total sales this month\nI can calculate it, but I don\u2019t have your sales data/date range in this chat.\n\n### Quick questions (so I return the exact number)\n1. **Which month?** (e.g., April 2026 or \u201ccurrent month to date\u201d)\n2. **From where should I pull sales?**  \n   - QuickBooks (Invoices/Sales Receipts), or  \n   - Your invoice list (you mentioned **16 invoices**)?\n\n### What I need (pick one)\n- **Option A (fastest):** Export from QuickBooks a report:\n  - **Reports \u2192 Sales by Customer Summary**\n  - Set dates to **1st of month \u2192 today**\n  - Send me the total (or paste the report)\n- **Option B:** Upload/paste your **invoice list** with **Invoice Date + Total Amount** (or a screenshot/export).\n\n### How I\u2019ll report it back\n- **Total sales (gross)**\n- **Net sales** (after credits/discounts, if any)\n- **# of invoices** this month + **top customers**\n\nTell me the month and your source (A or B), and I\u2019ll give you the total immediately.",
+        "session_id": "chat_33dbb51286"
       },
       "error": null
     },
@@ -5778,6 +5787,13 @@
       "actual_status": 200,
       "success": true,
       "response_data": [
+        {
+          "session_id": "chat_33dbb51286",
+          "preview": "What is my total sales this month?",
+          "message_count": 1,
+          "last_at": "2026-04-18T17:18:46.123951+00:00",
+          "company_id": "ckfrozen"
+        },
         {
           "session_id": "chat_9454de5695",
           "preview": "What is my total sales this month?",
@@ -5914,7 +5930,7 @@
             "low_stock": 1
           }
         ],
-        "checked_at": "2026-04-18T14:31:26.154357+00:00"
+        "checked_at": "2026-04-18T17:18:47.288359+00:00"
       },
       "error": null
     },
@@ -5930,25 +5946,25 @@
         "assets": {
           "current_assets": {
             "cash_and_equivalents": 0,
-            "accounts_receivable": 10708.39,
-            "inventory": 20518.5,
-            "total_current_assets": 31226.89
+            "accounts_receivable": 10978.39,
+            "inventory": 21018.5,
+            "total_current_assets": 31996.89
           },
-          "total_assets": -3868.2
+          "total_assets": -3098.2
         },
         "liabilities": {
           "current_liabilities": {
-            "accounts_payable": 65300,
-            "total_current_liabilities": 65300
+            "accounts_payable": 65550.0,
+            "total_current_liabilities": 65550.0
           },
-          "total_liabilities": 65300
+          "total_liabilities": 65550.0
         },
         "equity": {
           "owner_equity": 0,
-          "retained_earnings": -35409.4,
-          "total_equity": -69168.2
+          "retained_earnings": -35306.8,
+          "total_equity": -68648.2
         },
-        "total_liabilities_and_equity": -3868.2
+        "total_liabilities_and_equity": -3098.2
       },
       "error": null
     },
@@ -5965,24 +5981,24 @@
           "current_assets": {
             "cash_and_equivalents": 0,
             "accounts_receivable": 0,
-            "inventory": 20518.5,
-            "total_current_assets": 20518.5
+            "inventory": 21018.5,
+            "total_current_assets": 21018.5
           },
-          "total_assets": 20518.5
+          "total_assets": 21018.5
         },
         "liabilities": {
           "current_liabilities": {
-            "accounts_payable": 65300,
-            "total_current_liabilities": 65300
+            "accounts_payable": 65550.0,
+            "total_current_liabilities": 65550.0
           },
-          "total_liabilities": 65300
+          "total_liabilities": 65550.0
         },
         "equity": {
           "owner_equity": 0,
           "retained_earnings": 0.0,
-          "total_equity": -44781.5
+          "total_equity": -44531.5
         },
-        "total_liabilities_and_equity": 20518.5
+        "total_liabilities_and_equity": 21018.5
       },
       "error": null
     },
@@ -14696,13 +14712,21 @@
             "description": "Payment - Cash",
             "amount": -500.0,
             "balance": 3826.72
+          },
+          {
+            "date": "2026-04-18",
+            "type": "Invoice",
+            "ref": "INV-2026-016",
+            "description": "Invoice INV-2026-016",
+            "amount": 270.0,
+            "balance": 4096.72
           }
         ],
-        "total_invoiced": 4596.72,
+        "total_invoiced": 4866.72,
         "total_paid": 4061.2200000000003,
-        "balance_due": 3826.72,
+        "balance_due": 4096.72,
         "statement_date": "2026-04-18",
-        "invoice_count": 5
+        "invoice_count": 6
       },
       "error": null
     },
@@ -14722,7 +14746,7 @@
           "account_type": "Asset",
           "sub_type": "Current Asset",
           "opening_balance": 50000,
-          "balance": 49500.0,
+          "balance": 50500.0,
           "status": "Active",
           "created_at": "2026-04-18T14:28:45.294091+00:00"
         },
@@ -14853,7 +14877,7 @@
           "name": "Sales Revenue",
           "account_type": "Income",
           "sub_type": "Operating Revenue",
-          "balance": 0,
+          "balance": -1000.0,
           "status": "Active",
           "created_at": "2026-04-18T14:28:45.338259+00:00",
           "opening_balance": 0
@@ -14941,6 +14965,19 @@
           "status": "Active",
           "created_at": "2026-04-18T14:28:45.340578+00:00",
           "opening_balance": 0
+        },
+        {
+          "account_id": "acct_5cf8150a62",
+          "company_id": "ckfrozen",
+          "code": "7000",
+          "name": "Test Marketing Expense",
+          "account_type": "Expense",
+          "sub_type": "Operating Expense",
+          "description": "Test account for API testing",
+          "opening_balance": 0.0,
+          "status": "Active",
+          "balance": 0.0,
+          "created_at": "2026-04-18T14:31:27.202282+00:00"
         }
       ],
       "error": null
@@ -14953,7 +14990,7 @@
       "actual_status": 201,
       "success": true,
       "response_data": {
-        "account_id": "acct_5cf8150a62",
+        "account_id": "acct_5fcad6afcd",
         "company_id": "ckfrozen",
         "code": "7000",
         "name": "Test Marketing Expense",
@@ -14963,7 +15000,7 @@
         "opening_balance": 0.0,
         "status": "Active",
         "balance": 0.0,
-        "created_at": "2026-04-18T14:31:27.202282+00:00"
+        "created_at": "2026-04-18T17:18:48.552672+00:00"
       },
       "error": null
     },
@@ -14975,6 +15012,34 @@
       "actual_status": 200,
       "success": true,
       "response_data": [
+        {
+          "entry_id": "je_41a85e3b82",
+          "company_id": "ckfrozen",
+          "entry_number": "JE-2026-002",
+          "entry_date": "2024-12-15",
+          "description": "Test journal entry for API testing",
+          "lines": [
+            {
+              "account_code": "1000",
+              "account_name": "Cash",
+              "description": "Test debit entry",
+              "debit": 1000.0,
+              "credit": 0.0
+            },
+            {
+              "account_code": "4000",
+              "account_name": "Sales Revenue",
+              "description": "Test credit entry",
+              "debit": 0.0,
+              "credit": 1000.0
+            }
+          ],
+          "total_debit": 1000.0,
+          "total_credit": 1000.0,
+          "status": "Posted",
+          "created_at": "2026-04-18T14:31:27.415086+00:00",
+          "created_by": "test-user-1776150388162"
+        },
         {
           "entry_id": "je_5181b22e46",
           "company_id": "ckfrozen",
@@ -15014,9 +15079,9 @@
       "actual_status": 201,
       "success": true,
       "response_data": {
-        "entry_id": "je_41a85e3b82",
+        "entry_id": "je_e15e1c41c8",
         "company_id": "ckfrozen",
-        "entry_number": "JE-2026-002",
+        "entry_number": "JE-2026-003",
         "entry_date": "2024-12-15",
         "description": "Test journal entry for API testing",
         "lines": [
@@ -15038,7 +15103,7 @@
         "total_debit": 1000.0,
         "total_credit": 1000.0,
         "status": "Posted",
-        "created_at": "2026-04-18T14:31:27.415086+00:00",
+        "created_at": "2026-04-18T17:18:48.779060+00:00",
         "created_by": "test-user-1776150388162"
       },
       "error": null
@@ -23573,7 +23638,38 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_data": [],
+      "response_data": [
+        {
+          "estimate_id": "est_13e67c44c0",
+          "company_id": "ckfrozen",
+          "estimate_number": "EST-2026-001",
+          "customer_id": "cust_8a2809c2df",
+          "customer_name": "Atlantic Seafood Markets",
+          "estimate_date": "2024-12-15",
+          "expiry_date": "2025-01-15",
+          "items": [
+            {
+              "product": "Test Product",
+              "description": "Test item for estimate",
+              "quantity": 10.0,
+              "unit": "pcs",
+              "rate": 25.0,
+              "discount": 0,
+              "tax": 0,
+              "amount": 250.0
+            }
+          ],
+          "notes": "Test estimate for API testing",
+          "terms": "Valid for 30 days",
+          "subtotal": 250.0,
+          "tax_total": 20.0,
+          "discount_total": 0,
+          "total": 270.0,
+          "status": "Converted",
+          "created_at": "2026-04-18T14:31:27.937541+00:00",
+          "created_by": "test-user-1776150388162"
+        }
+      ],
       "error": null
     },
     {
@@ -23584,9 +23680,9 @@
       "actual_status": 201,
       "success": true,
       "response_data": {
-        "estimate_id": "est_13e67c44c0",
+        "estimate_id": "est_ffd3485a85",
         "company_id": "ckfrozen",
-        "estimate_number": "EST-2026-001",
+        "estimate_number": "EST-2026-002",
         "customer_id": "cust_8a2809c2df",
         "customer_name": "Atlantic Seafood Markets",
         "estimate_date": "2024-12-15",
@@ -23610,7 +23706,7 @@
         "discount_total": 0,
         "total": 270.0,
         "status": "Draft",
-        "created_at": "2026-04-18T14:31:27.937541+00:00",
+        "created_at": "2026-04-18T17:18:49.282264+00:00",
         "created_by": "test-user-1776150388162"
       },
       "error": null
@@ -23618,14 +23714,14 @@
     {
       "test_name": "Convert Estimate to Invoice",
       "method": "POST",
-      "endpoint": "companies/ckfrozen/estimates/est_13e67c44c0/convert",
+      "endpoint": "companies/ckfrozen/estimates/est_ffd3485a85/convert",
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
       "response_data": {
-        "invoice_id": "inv_42b13748e6",
+        "invoice_id": "inv_4d6b7802cb",
         "company_id": "ckfrozen",
-        "invoice_number": "INV-2026-016",
+        "invoice_number": "INV-2026-017",
         "customer_id": "cust_8a2809c2df",
         "customer_name": "Atlantic Seafood Markets",
         "invoice_date": "2026-04-18",
@@ -23655,201 +23751,14 @@
         "amount_paid": 0,
         "balance_due": 270.0,
         "payments": [],
-        "converted_from": "est_13e67c44c0",
-        "created_at": "2026-04-18T14:31:28.093362+00:00",
+        "converted_from": "est_ffd3485a85",
+        "created_at": "2026-04-18T17:18:49.408046+00:00",
         "created_by": "test-user-1776150388162"
       },
       "error": null
     },
     {
       "test_name": "Get Vendors for Bill",
-      "method": "GET",
-      "endpoint": "companies/ckfrozen/vendors",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_data": [
-        {
-          "vendor_id": "vnd_09e1ec1697",
-          "company_id": "ckfrozen",
-          "name": "Pacific Ocean Fisheries",
-          "company_name": "Pacific Ocean Fisheries Ltd.",
-          "phone": "(310) 555-0123",
-          "email": "sales@pacificocean.com",
-          "address": "1200 Harbor Dr, Long Beach, CA 90802",
-          "tax_id": "",
-          "default_expense_account": "",
-          "notes": "",
-          "payable_balance": 12500,
-          "total_billed": 85000,
-          "bill_count": 12,
-          "status": "Active",
-          "created_at": "2026-04-14T07:06:50.597908+00:00",
-          "created_by": "system"
-        },
-        {
-          "vendor_id": "vnd_a425b712f9",
-          "company_id": "ckfrozen",
-          "name": "Dhaka Cold Storage",
-          "company_name": "Dhaka Cold Storage Pvt.",
-          "phone": "+880-2-555-7890",
-          "email": "export@dhakacold.com",
-          "address": "12 Motijheel, Dhaka, Bangladesh",
-          "tax_id": "",
-          "default_expense_account": "",
-          "notes": "",
-          "payable_balance": 28000,
-          "total_billed": 142000,
-          "bill_count": 24,
-          "status": "Active",
-          "created_at": "2026-04-14T07:06:50.608736+00:00",
-          "created_by": "system"
-        },
-        {
-          "vendor_id": "vnd_862e2f7dc4",
-          "company_id": "ckfrozen",
-          "name": "Northern Ice Logistics",
-          "company_name": "Northern Ice LLC",
-          "phone": "(617) 555-0145",
-          "email": "dispatch@northernice.com",
-          "address": "800 Cold Chain Blvd, Boston, MA 02210",
-          "tax_id": "",
-          "default_expense_account": "",
-          "notes": "",
-          "payable_balance": 4500,
-          "total_billed": 32000,
-          "bill_count": 8,
-          "status": "Active",
-          "created_at": "2026-04-14T07:06:50.609067+00:00",
-          "created_by": "system"
-        },
-        {
-          "vendor_id": "vnd_2edbf3d29b",
-          "company_id": "ckfrozen",
-          "name": "Bay of Bengal Exports",
-          "company_name": "Bay of Bengal Trading Co.",
-          "phone": "+880-31-555-4567",
-          "email": "info@bayofbengal.com",
-          "address": "45 Port Rd, Chittagong, Bangladesh",
-          "tax_id": "",
-          "default_expense_account": "",
-          "notes": "",
-          "payable_balance": 18200,
-          "total_billed": 96000,
-          "bill_count": 18,
-          "status": "Active",
-          "created_at": "2026-04-14T07:06:50.609283+00:00",
-          "created_by": "system"
-        },
-        {
-          "vendor_id": "vnd_0760013050",
-          "company_id": "ckfrozen",
-          "name": "FrostPak Packaging",
-          "company_name": "FrostPak Inc.",
-          "phone": "(973) 555-0178",
-          "email": "orders@frostpak.com",
-          "address": "300 Industrial Park, Newark, NJ 07101",
-          "tax_id": "",
-          "default_expense_account": "",
-          "notes": "",
-          "payable_balance": 2100,
-          "total_billed": 15000,
-          "bill_count": 5,
-          "status": "Active",
-          "created_at": "2026-04-14T07:06:50.609479+00:00",
-          "created_by": "system"
-        }
-      ],
-      "error": null
-    },
-    {
-      "test_name": "Get Bills",
-      "method": "GET",
-      "endpoint": "companies/ckfrozen/bills",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_data": [],
-      "error": null
-    },
-    {
-      "test_name": "Create Bill",
-      "method": "POST",
-      "endpoint": "companies/ckfrozen/bills",
-      "expected_status": 201,
-      "actual_status": 201,
-      "success": true,
-      "response_data": {
-        "bill_id": "bill_b654d34c04",
-        "company_id": "ckfrozen",
-        "vendor_id": "vnd_09e1ec1697",
-        "vendor_name": "Pacific Ocean Fisheries",
-        "bill_number": "TEST-BILL-001",
-        "bill_date": "2024-12-15",
-        "due_date": "2025-01-15",
-        "items": [
-          {
-            "account": "6000",
-            "description": "Test expense item",
-            "amount": 500.0
-          }
-        ],
-        "notes": "Test bill for API testing",
-        "total": 500.0,
-        "status": "Open",
-        "amount_paid": 0,
-        "balance_due": 500.0,
-        "payments": [],
-        "created_at": "2026-04-18T14:31:28.429070+00:00",
-        "created_by": "test-user-1776150388162"
-      },
-      "error": null
-    },
-    {
-      "test_name": "Pay Bill",
-      "method": "POST",
-      "endpoint": "companies/ckfrozen/bills/bill_b654d34c04/pay",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_data": {
-        "bill_id": "bill_b654d34c04",
-        "company_id": "ckfrozen",
-        "vendor_id": "vnd_09e1ec1697",
-        "vendor_name": "Pacific Ocean Fisheries",
-        "bill_number": "TEST-BILL-001",
-        "bill_date": "2024-12-15",
-        "due_date": "2025-01-15",
-        "items": [
-          {
-            "account": "6000",
-            "description": "Test expense item",
-            "amount": 500.0
-          }
-        ],
-        "notes": "Test bill for API testing",
-        "total": 500.0,
-        "status": "Partial",
-        "amount_paid": 250.0,
-        "balance_due": 250.0,
-        "payments": [
-          {
-            "payment_id": "pmt_eada2973",
-            "amount": 250.0,
-            "payment_date": "2024-12-15",
-            "payment_method": "Bank Transfer",
-            "reference": "TEST-PAY-001",
-            "memo": "Partial payment for testing",
-            "recorded_at": "2026-04-18T14:31:28.610565+00:00"
-          }
-        ],
-        "created_at": "2026-04-18T14:31:28.429070+00:00",
-        "created_by": "test-user-1776150388162"
-      },
-      "error": null
-    },
-    {
-      "test_name": "Get Vendors for Stock Receipt",
       "method": "GET",
       "endpoint": "companies/ckfrozen/vendors",
       "expected_status": 200,
@@ -23950,6 +23859,228 @@
       "error": null
     },
     {
+      "test_name": "Get Bills",
+      "method": "GET",
+      "endpoint": "companies/ckfrozen/bills",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": [
+        {
+          "bill_id": "bill_b654d34c04",
+          "company_id": "ckfrozen",
+          "vendor_id": "vnd_09e1ec1697",
+          "vendor_name": "Pacific Ocean Fisheries",
+          "bill_number": "TEST-BILL-001",
+          "bill_date": "2024-12-15",
+          "due_date": "2025-01-15",
+          "items": [
+            {
+              "account": "6000",
+              "description": "Test expense item",
+              "amount": 500.0
+            }
+          ],
+          "notes": "Test bill for API testing",
+          "total": 500.0,
+          "status": "Partial",
+          "amount_paid": 250.0,
+          "balance_due": 250.0,
+          "payments": [
+            {
+              "payment_id": "pmt_eada2973",
+              "amount": 250.0,
+              "payment_date": "2024-12-15",
+              "payment_method": "Bank Transfer",
+              "reference": "TEST-PAY-001",
+              "memo": "Partial payment for testing",
+              "recorded_at": "2026-04-18T14:31:28.610565+00:00"
+            }
+          ],
+          "created_at": "2026-04-18T14:31:28.429070+00:00",
+          "created_by": "test-user-1776150388162"
+        }
+      ],
+      "error": null
+    },
+    {
+      "test_name": "Create Bill",
+      "method": "POST",
+      "endpoint": "companies/ckfrozen/bills",
+      "expected_status": 201,
+      "actual_status": 201,
+      "success": true,
+      "response_data": {
+        "bill_id": "bill_9d9a466ec3",
+        "company_id": "ckfrozen",
+        "vendor_id": "vnd_09e1ec1697",
+        "vendor_name": "Pacific Ocean Fisheries",
+        "bill_number": "TEST-BILL-001",
+        "bill_date": "2024-12-15",
+        "due_date": "2025-01-15",
+        "items": [
+          {
+            "account": "6000",
+            "description": "Test expense item",
+            "amount": 500.0
+          }
+        ],
+        "notes": "Test bill for API testing",
+        "total": 500.0,
+        "status": "Open",
+        "amount_paid": 0,
+        "balance_due": 500.0,
+        "payments": [],
+        "created_at": "2026-04-18T17:18:49.759813+00:00",
+        "created_by": "test-user-1776150388162"
+      },
+      "error": null
+    },
+    {
+      "test_name": "Pay Bill",
+      "method": "POST",
+      "endpoint": "companies/ckfrozen/bills/bill_9d9a466ec3/pay",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "bill_id": "bill_9d9a466ec3",
+        "company_id": "ckfrozen",
+        "vendor_id": "vnd_09e1ec1697",
+        "vendor_name": "Pacific Ocean Fisheries",
+        "bill_number": "TEST-BILL-001",
+        "bill_date": "2024-12-15",
+        "due_date": "2025-01-15",
+        "items": [
+          {
+            "account": "6000",
+            "description": "Test expense item",
+            "amount": 500.0
+          }
+        ],
+        "notes": "Test bill for API testing",
+        "total": 500.0,
+        "status": "Partial",
+        "amount_paid": 250.0,
+        "balance_due": 250.0,
+        "payments": [
+          {
+            "payment_id": "pmt_b7bf63b0",
+            "amount": 250.0,
+            "payment_date": "2024-12-15",
+            "payment_method": "Bank Transfer",
+            "reference": "TEST-PAY-001",
+            "memo": "Partial payment for testing",
+            "recorded_at": "2026-04-18T17:18:49.871521+00:00"
+          }
+        ],
+        "created_at": "2026-04-18T17:18:49.759813+00:00",
+        "created_by": "test-user-1776150388162"
+      },
+      "error": null
+    },
+    {
+      "test_name": "Get Vendors for Stock Receipt",
+      "method": "GET",
+      "endpoint": "companies/ckfrozen/vendors",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": [
+        {
+          "vendor_id": "vnd_09e1ec1697",
+          "company_id": "ckfrozen",
+          "name": "Pacific Ocean Fisheries",
+          "company_name": "Pacific Ocean Fisheries Ltd.",
+          "phone": "(310) 555-0123",
+          "email": "sales@pacificocean.com",
+          "address": "1200 Harbor Dr, Long Beach, CA 90802",
+          "tax_id": "",
+          "default_expense_account": "",
+          "notes": "",
+          "payable_balance": 13000.0,
+          "total_billed": 86000.0,
+          "bill_count": 14,
+          "status": "Active",
+          "created_at": "2026-04-14T07:06:50.597908+00:00",
+          "created_by": "system"
+        },
+        {
+          "vendor_id": "vnd_a425b712f9",
+          "company_id": "ckfrozen",
+          "name": "Dhaka Cold Storage",
+          "company_name": "Dhaka Cold Storage Pvt.",
+          "phone": "+880-2-555-7890",
+          "email": "export@dhakacold.com",
+          "address": "12 Motijheel, Dhaka, Bangladesh",
+          "tax_id": "",
+          "default_expense_account": "",
+          "notes": "",
+          "payable_balance": 28000,
+          "total_billed": 142000,
+          "bill_count": 24,
+          "status": "Active",
+          "created_at": "2026-04-14T07:06:50.608736+00:00",
+          "created_by": "system"
+        },
+        {
+          "vendor_id": "vnd_862e2f7dc4",
+          "company_id": "ckfrozen",
+          "name": "Northern Ice Logistics",
+          "company_name": "Northern Ice LLC",
+          "phone": "(617) 555-0145",
+          "email": "dispatch@northernice.com",
+          "address": "800 Cold Chain Blvd, Boston, MA 02210",
+          "tax_id": "",
+          "default_expense_account": "",
+          "notes": "",
+          "payable_balance": 4500,
+          "total_billed": 32000,
+          "bill_count": 8,
+          "status": "Active",
+          "created_at": "2026-04-14T07:06:50.609067+00:00",
+          "created_by": "system"
+        },
+        {
+          "vendor_id": "vnd_2edbf3d29b",
+          "company_id": "ckfrozen",
+          "name": "Bay of Bengal Exports",
+          "company_name": "Bay of Bengal Trading Co.",
+          "phone": "+880-31-555-4567",
+          "email": "info@bayofbengal.com",
+          "address": "45 Port Rd, Chittagong, Bangladesh",
+          "tax_id": "",
+          "default_expense_account": "",
+          "notes": "",
+          "payable_balance": 18200,
+          "total_billed": 96000,
+          "bill_count": 18,
+          "status": "Active",
+          "created_at": "2026-04-14T07:06:50.609283+00:00",
+          "created_by": "system"
+        },
+        {
+          "vendor_id": "vnd_0760013050",
+          "company_id": "ckfrozen",
+          "name": "FrostPak Packaging",
+          "company_name": "FrostPak Inc.",
+          "phone": "(973) 555-0178",
+          "email": "orders@frostpak.com",
+          "address": "300 Industrial Park, Newark, NJ 07101",
+          "tax_id": "",
+          "default_expense_account": "",
+          "notes": "",
+          "payable_balance": 2100,
+          "total_billed": 15000,
+          "bill_count": 5,
+          "status": "Active",
+          "created_at": "2026-04-14T07:06:50.609479+00:00",
+          "created_by": "system"
+        }
+      ],
+      "error": null
+    },
+    {
       "test_name": "Get Inventory for Stock Receipt",
       "method": "GET",
       "endpoint": "companies/ckfrozen/inventory",
@@ -23964,14 +24095,14 @@
           "product_name": "Hilsha Fish (Frozen)",
           "category": "Frozen Fish",
           "warehouse": "Main Warehouse",
-          "stock_on_hand": 255.0,
+          "stock_on_hand": 305.0,
           "reserved_stock": 25,
-          "available_stock": 230.0,
+          "available_stock": 280.0,
           "unit_cost": 18.5,
           "sales_price": 24.0,
           "unit": "kg",
           "reorder_point": 37,
-          "inventory_value": 4717.5,
+          "inventory_value": 5217.5,
           "status": "Active",
           "movement_history": [
             {
@@ -23990,6 +24121,15 @@
               "reason": "Test adjustment",
               "reference": "TEST-175227",
               "date": "2026-04-14T17:52:28.033913+00:00",
+              "by": "test-user-1776150388162"
+            },
+            {
+              "movement_id": "mov_2f2c0362",
+              "type": "receive",
+              "quantity": 50,
+              "reason": "Stock Receipt rcpt_05c138190f",
+              "reference": "PO-TEST-001",
+              "date": "2026-04-18T14:31:29.087327+00:00",
               "by": "test-user-1776150388162"
             }
           ],
@@ -24426,7 +24566,28 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_data": [],
+      "response_data": [
+        {
+          "receipt_id": "rcpt_05c138190f",
+          "company_id": "ckfrozen",
+          "vendor_id": "vnd_09e1ec1697",
+          "vendor_name": "Pacific Ocean Fisheries",
+          "reference": "PO-TEST-001",
+          "receive_date": "2024-12-15",
+          "items": [
+            {
+              "item_id": "itm_5c5473c75c",
+              "product_name": "Test Product",
+              "quantity": 50,
+              "unit_cost": 10.0
+            }
+          ],
+          "notes": "Test stock receipt for API testing",
+          "total_cost": 500.0,
+          "created_at": "2026-04-18T14:31:29.064093+00:00",
+          "created_by": "test-user-1776150388162"
+        }
+      ],
       "error": null
     },
     {
@@ -24437,7 +24598,7 @@
       "actual_status": 201,
       "success": true,
       "response_data": {
-        "receipt_id": "rcpt_05c138190f",
+        "receipt_id": "rcpt_dfde909c5f",
         "company_id": "ckfrozen",
         "vendor_id": "vnd_09e1ec1697",
         "vendor_name": "Pacific Ocean Fisheries",
@@ -24453,7 +24614,7 @@
         ],
         "notes": "Test stock receipt for API testing",
         "total_cost": 500.0,
-        "created_at": "2026-04-18T14:31:29.064093+00:00",
+        "created_at": "2026-04-18T17:18:50.346633+00:00",
         "created_by": "test-user-1776150388162"
       },
       "error": null
@@ -24481,15 +24642,23 @@
               "balance": 51000.0
             },
             {
+              "date": "2024-12-15",
+              "entry_number": "JE-2026-003",
+              "description": "Test debit entry",
+              "debit": 1000.0,
+              "credit": 0.0,
+              "balance": 52000.0
+            },
+            {
               "date": "2026-04-15",
               "entry_number": "JE-2026-001",
               "description": "Cash payment",
               "debit": 0.0,
               "credit": 500.0,
-              "balance": 50500.0
+              "balance": 51500.0
             }
           ],
-          "closing_balance": 50500.0
+          "closing_balance": 51500.0
         },
         {
           "code": "3000",
@@ -24512,9 +24681,17 @@
               "debit": 0.0,
               "credit": 1000.0,
               "balance": -1000.0
+            },
+            {
+              "date": "2024-12-15",
+              "entry_number": "JE-2026-003",
+              "description": "Test credit entry",
+              "debit": 0.0,
+              "credit": 1000.0,
+              "balance": -2000.0
             }
           ],
-          "closing_balance": -1000.0
+          "closing_balance": -2000.0
         },
         {
           "code": "6100",
@@ -24559,15 +24736,23 @@
               "balance": 51000.0
             },
             {
+              "date": "2024-12-15",
+              "entry_number": "JE-2026-003",
+              "description": "Test debit entry",
+              "debit": 1000.0,
+              "credit": 0.0,
+              "balance": 52000.0
+            },
+            {
               "date": "2026-04-15",
               "entry_number": "JE-2026-001",
               "description": "Cash payment",
               "debit": 0.0,
               "credit": 500.0,
-              "balance": 50500.0
+              "balance": 51500.0
             }
           ],
-          "closing_balance": 50500.0
+          "closing_balance": 51500.0
         }
       ],
       "error": null
@@ -24593,9 +24778,17 @@
               "debit": 1000.0,
               "credit": 0.0,
               "balance": 51000.0
+            },
+            {
+              "date": "2024-12-15",
+              "entry_number": "JE-2026-003",
+              "description": "Test debit entry",
+              "debit": 1000.0,
+              "credit": 0.0,
+              "balance": 52000.0
             }
           ],
-          "closing_balance": 51000.0
+          "closing_balance": 52000.0
         },
         {
           "code": "3000",
@@ -24618,9 +24811,17 @@
               "debit": 0.0,
               "credit": 1000.0,
               "balance": -1000.0
+            },
+            {
+              "date": "2024-12-15",
+              "entry_number": "JE-2026-003",
+              "description": "Test credit entry",
+              "debit": 0.0,
+              "credit": 1000.0,
+              "balance": -2000.0
             }
           ],
-          "closing_balance": -1000.0
+          "closing_balance": -2000.0
         }
       ],
       "error": null
@@ -24639,7 +24840,7 @@
             "code": "1000",
             "name": "Cash",
             "type": "Asset",
-            "debit": 50500.0,
+            "debit": 51500.0,
             "credit": 0
           },
           {
@@ -24654,7 +24855,7 @@
             "name": "Sales Revenue",
             "type": "Income",
             "debit": 0,
-            "credit": 1000.0
+            "credit": 2000.0
           },
           {
             "code": "6100",
@@ -24664,8 +24865,8 @@
             "credit": 0
           }
         ],
-        "total_debit": 51000.0,
-        "total_credit": 51000.0,
+        "total_debit": 52000.0,
+        "total_credit": 52000.0,
         "balanced": true
       },
       "error": null
@@ -24684,7 +24885,7 @@
             "code": "1000",
             "name": "Cash",
             "type": "Asset",
-            "debit": 51000.0,
+            "debit": 52000.0,
             "credit": 0
           },
           {
@@ -24699,11 +24900,11 @@
             "name": "Sales Revenue",
             "type": "Income",
             "debit": 0,
-            "credit": 1000.0
+            "credit": 2000.0
           }
         ],
-        "total_debit": 51000.0,
-        "total_credit": 51000.0,
+        "total_debit": 52000.0,
+        "total_credit": 52000.0,
         "balanced": true
       },
       "error": null
