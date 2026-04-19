@@ -118,13 +118,13 @@ export default function DateFilterPreset({ onDateChange, storageKey = 'date_filt
   ];
 
   return (
-    <div className=\"space-y-3\">
-      <div className=\"flex items-center gap-2 flex-wrap\">
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 flex-wrap">
         {presets.map(p => (
           <button
             key={p.key}
             onClick={() => handlePresetClick(p.key)}
-            className=\"px-3 py-1.5 text-xs font-medium rounded-lg transition-colors\"
+            className="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
             style={{
               background: activePreset === p.key ? '#0F2D5C' : '#F7F9FB',
               color: activePreset === p.key ? '#FFFFFF' : '#434655'
@@ -134,7 +134,7 @@ export default function DateFilterPreset({ onDateChange, storageKey = 'date_filt
         ))}
         <button
           onClick={() => setShowCustom(!showCustom)}
-          className=\"px-3 py-1.5 text-xs font-medium rounded-lg transition-colors flex items-center gap-1\"
+          className="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors flex items-center gap-1"
           style={{
             background: activePreset === 'custom' ? '#0F2D5C' : '#F7F9FB',
             color: activePreset === 'custom' ? '#FFFFFF' : '#434655'
@@ -144,25 +144,25 @@ export default function DateFilterPreset({ onDateChange, storageKey = 'date_filt
       </div>
 
       {showCustom && (
-        <div className=\"flex items-center gap-2 p-3 rounded-lg\" style={{ background: '#F7F9FB' }}>
+        <div className="flex items-center gap-2 p-3 rounded-lg" style={{ background: '#F7F9FB' }}>
           <input
-            type=\"date\"
+            type="date"
             value={customStart}
             onChange={(e) => setCustomStart(e.target.value)}
-            className=\"px-2 py-1 text-xs rounded border focus:outline-none focus:ring-1\"
+            className="px-2 py-1 text-xs rounded border focus:outline-none focus:ring-1"
             style={{ borderColor: '#CBD5E1' }}
           />
-          <span className=\"text-xs\" style={{ color: '#434655' }}>to</span>
+          <span className="text-xs" style={{ color: '#434655' }}>to</span>
           <input
-            type=\"date\"
+            type="date"
             value={customEnd}
             onChange={(e) => setCustomEnd(e.target.value)}
-            className=\"px-2 py-1 text-xs rounded border focus:outline-none focus:ring-1\"
+            className="px-2 py-1 text-xs rounded border focus:outline-none focus:ring-1"
             style={{ borderColor: '#CBD5E1' }}
           />
           <button
             onClick={handleCustomApply}
-            className=\"px-3 py-1 text-xs font-medium rounded-lg text-white\"
+            className="px-3 py-1 text-xs font-medium rounded-lg text-white"
             style={{ background: '#0E7490' }}>
             Apply
           </button>

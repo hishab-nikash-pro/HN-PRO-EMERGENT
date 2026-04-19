@@ -4,6 +4,7 @@ import { getExpenses } from '../lib/api';
 import AppShell from '../components/layout/AppShell';
 import { useNavigate } from 'react-router-dom';
 import { Plus, MagnifyingGlass, Export, Receipt } from '@phosphor-icons/react';
+import DateFilterPreset from '../components/DateFilterPreset';
 
 export default function ExpensesList() {
   const { selectedCompany } = useCompany();
@@ -11,6 +12,7 @@ export default function ExpensesList() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -22,11 +24,16 @@ export default function ExpensesList() {
       .finally(() => setLoading(false));
   }, [selectedCompany, categoryFilter]);
 
-  const filtered = expenses.filter(e =>
-    e.vendor_name?.toLowerCase().includes(search.toLowerCase()) ||
-    e.category?.toLowerCase().includes(search.toLowerCase()) ||
-    e.memo?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = expenses.filter(e => {
+    const matchesSearch = e.vendor_name?.toLowerCase().includes(search.toLowerCase()) ||
+      e.category?.toLowerCase().includes(search.toLowerCase()) ||
+      e.memo?.toLowerCase().includes(search.toLowerCase());
+    
+    const matchesDate = !dateRange.start || !dateRange.end || 
+      (e.expense_date >= dateRange.start && e.expense_date <= dateRange.end);
+    
+    return matchesSearch && matchesDate;
+  });
 
   const totalAmount = filtered.reduce((s, e) => s + (e.amount || 0), 0);
   const categories = [...new Set(expenses.map(e => e.category).filter(Boolean))];
@@ -68,22 +75,29 @@ export default function ExpensesList() {
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="relative flex-1 max-w-xs">
-            <MagnifyingGlass size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#434655' }} />
-            <input data-testid="expenses-search" type="text" placeholder="Search expenses..." value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-sm rounded-lg focus:outline-none focus:ring-1"
-              style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }} />
-          </div>
-          <select data-testid="expense-category-filter" value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-1"
-            style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }}>
-            <option value="">All Categories</option>
+        <div className="space-y-3">
+          <DateFilterPreset 
+            onDateChange={(start, end) => setDateRange({ start, end })}
+            storageKey="expenses_date_filter"
+            defaultPreset="this_month"
+          />
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="relative flex-1 max-w-xs">
+              <MagnifyingGlass size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#434655' }} />
+              <input data-testid="expenses-search" type="text" placeholder="Search expenses..." value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 text-sm rounded-lg focus:outline-none focus:ring-1"
+                style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }} />
+            </div>
+            <select data-testid="expense-category-filter" value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-1"
+              style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }}>
+              <option value="">All Categories</option>
             {categories.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           <button className="p-2 rounded-lg hover:bg-white transition-colors" style={{ color: '#434655' }}><Export size={18} /></button>
+          </div>
         </div>
 
         {/* Table */}

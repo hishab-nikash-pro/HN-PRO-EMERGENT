@@ -54,9 +54,6 @@ export const getExpenses = (companyId, category) => {
 export const createExpense = (companyId, data) => api.post(`/companies/${companyId}/expenses`, data);
 export const getExpense = (companyId, expenseId) => api.get(`/companies/${companyId}/expenses/${expenseId}`);
 export const updateExpense = (companyId, expenseId, data) => api.put(`/companies/${companyId}/expenses/${expenseId}`, data);
-export const updateCustomer = (companyId, customerId, data) => api.put(`/companies/${companyId}/customers/${customerId}`, data);
-export const updateVendor = (companyId, vendorId, data) => api.put(`/companies/${companyId}/vendors/${vendorId}`, data);
-export const updateProduct = (companyId, productId, data) => api.put(`/companies/${companyId}/products/${productId}`, data);
 
 // Inventory
 export const getInventory = (companyId, category) => {

@@ -4,6 +4,7 @@ import { listVendorPayments } from '../lib/api';
 import AppShell from '../components/layout/AppShell';
 import { useNavigate } from 'react-router-dom';
 import { Plus, MagnifyingGlass, CaretRight } from '@phosphor-icons/react';
+import DateFilterPreset from '../components/DateFilterPreset';
 
 const money = (v) => `$${(v || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
@@ -14,6 +15,7 @@ export default function VendorPayments() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [method, setMethod] = useState('');
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,7 +34,9 @@ export default function VendorPayments() {
     const q = search.toLowerCase();
     const matchQ = !q || (p.vendor_name || '').toLowerCase().includes(q) || (p.bill_number || '').toLowerCase().includes(q) || (p.reference || '').toLowerCase().includes(q);
     const matchM = !method || p.payment_method === method;
-    return matchQ && matchM;
+    const matchDate = !dateRange.start || !dateRange.end || 
+      (p.payment_date >= dateRange.start && p.payment_date <= dateRange.end);
+    return matchQ && matchM && matchDate;
   });
   const methods = [...new Set(payments.map(p => p.payment_method).filter(Boolean))];
   const filteredTotal = filtered.reduce((s, p) => s + (p.amount || 0), 0);
@@ -70,21 +74,28 @@ export default function VendorPayments() {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-          <div className="relative flex-1 sm:max-w-xs">
-            <MagnifyingGlass size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#475569' }} />
-            <input data-testid="vpayments-search" type="text" placeholder="Search by vendor, bill, ref..." value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-sm rounded-lg focus:outline-none focus:ring-1"
-              style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #CBD5E1', color: '#0F172A' }} />
+        <div className="space-y-3">
+          <DateFilterPreset 
+            onDateChange={(start, end) => setDateRange({ start, end })}
+            storageKey="vendor_payments_date_filter"
+            defaultPreset="this_month"
+          />
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+            <div className="relative flex-1 sm:max-w-xs">
+              <MagnifyingGlass size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#475569' }} />
+              <input data-testid="vpayments-search" type="text" placeholder="Search by vendor, bill, ref..." value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 text-sm rounded-lg focus:outline-none focus:ring-1"
+                style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #CBD5E1', color: '#0F172A' }} />
+            </div>
+            <select data-testid="vpayment-method-filter" value={method}
+              onChange={(e) => setMethod(e.target.value)}
+              className="px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-1"
+              style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #CBD5E1', color: '#0F172A' }}>
+              <option value="">All Methods</option>
+              {methods.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
           </div>
-          <select data-testid="vpayment-method-filter" value={method}
-            onChange={(e) => setMethod(e.target.value)}
-            className="px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-1"
-            style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #CBD5E1', color: '#0F172A' }}>
-            <option value="">All Methods</option>
-            {methods.map(m => <option key={m} value={m}>{m}</option>)}
-          </select>
         </div>
 
         {/* Desktop Table */}
