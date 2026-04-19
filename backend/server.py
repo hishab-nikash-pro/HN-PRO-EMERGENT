@@ -19,50 +19,50 @@ from datetime import datetime, timezone, timedelta
 from openai import AsyncOpenAI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-# Compatibility shim replacing emergentintegrations
-_openai_client = None
-def _get_openai_client():
-    global _openai_client
-    if _openai_client is None:
-        _openai_client = AsyncOpenAI(api_key=os.environ.get('EMERGENT_LLM_KEY', ''))
-    return _openai_client
-class ImageContent:
-    def __init__(self, image_base64: str = None, url: str = None):
-        self.image_base64 = image_base64
-        self.url = url
-class UserMessage:
-    def __init__(self, text: str = '', file_contents: list = None):
-        self.text = text
-        self.file_contents = file_contents or []
-class LlmChat:
-    def __init__(self, api_key: str = '', session_id: str = '', system_message: str = ''):
-        self.api_key = api_key
-        self.session_id = session_id
-        self.system_message = system_message
-        self.model = 'gpt-4o'
-        self.messages = []
-    def with_model(self, provider: str, model: str):
-        self.model = model
-        return self
-    async def send_message(self, user_msg: 'UserMessage') -> str:
-        client = AsyncOpenAI(api_key=self.api_key or os.environ.get('EMERGENT_LLM_KEY', ''))
-        msgs = [{'role': 'system', 'content': self.system_message}]
-        for m in self.messages:
-            if isinstance(m, dict):
-                msgs.append(m)
-        content = []
-        if user_msg.text:
-            content.append({'type': 'text', 'text': user_msg.text})
-        for fc in user_msg.file_contents:
-            if isinstance(fc, ImageContent) and fc.image_base64:
-                content.append({'type': 'image_url', 'image_url': {'url': f'data:image/jpeg;base64,{fc.image_base64}'}})
-        msgs.append({'role': 'user', 'content': content if len(content) > 1 else user_msg.text})
-        try:
-            resp = await client.chat.completions.create(model='gpt-4o', messages=msgs)
-            return resp.choices[0].message.content
-        except Exception:
-            resp = await client.chat.completions.create(model='gpt-4o-mini', messages=msgs)
-            return resp.choices[0].message.content
+# LLM integration via Emergent universal key
+try:
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent  # type: ignore
+    _USING_EMERGENT_LLM = True
+except Exception:
+    _USING_EMERGENT_LLM = False
+    # Lightweight fallback shim (direct OpenAI) — used only if emergentintegrations is missing.
+    _openai_client = None
+    def _get_openai_client():
+        global _openai_client
+        if _openai_client is None:
+            _openai_client = AsyncOpenAI(api_key=os.environ.get('EMERGENT_LLM_KEY', ''))
+        return _openai_client
+    class ImageContent:
+        def __init__(self, image_base64: str = None, url: str = None):
+            self.image_base64 = image_base64
+            self.url = url
+    class UserMessage:
+        def __init__(self, text: str = '', file_contents: list = None):
+            self.text = text
+            self.file_contents = file_contents or []
+    class LlmChat:
+        def __init__(self, api_key: str = '', session_id: str = '', system_message: str = ''):
+            self.api_key = api_key
+            self.session_id = session_id
+            self.system_message = system_message
+            self.model = 'gpt-4o'
+            self.messages = []
+        def with_model(self, provider: str, model: str):
+            self.model = model
+            return self
+        async def send_message(self, user_msg: 'UserMessage') -> str:
+            client = AsyncOpenAI(api_key=self.api_key or os.environ.get('EMERGENT_LLM_KEY', ''))
+            msgs = [{'role': 'system', 'content': self.system_message}]
+            for m in self.messages:
+                if isinstance(m, dict):
+                    msgs.append(m)
+            msgs.append({'role': 'user', 'content': user_msg.text})
+            try:
+                resp = await client.chat.completions.create(model='gpt-4o', messages=msgs)
+                return resp.choices[0].message.content
+            except Exception:
+                resp = await client.chat.completions.create(model='gpt-4o-mini', messages=msgs)
+                return resp.choices[0].message.content
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -420,6 +420,7 @@ async def get_customers(company_id: str, user: dict = Depends(get_current_user))
 
 @api_router.post("/companies/{company_id}/customers", status_code=201)
 async def create_customer(company_id: str, data: CustomerCreate, user: dict = Depends(get_current_user)):
+    await require_role(user, company_id, ["Owner", "Admin", "Manager", "Staff/Accountant"])
     cust = {
         "customer_id": f"cust_{uuid.uuid4().hex[:10]}",
         "company_id": company_id,
@@ -462,6 +463,7 @@ async def get_vendors(company_id: str, user: dict = Depends(get_current_user)):
 
 @api_router.post("/companies/{company_id}/vendors", status_code=201)
 async def create_vendor(company_id: str, data: VendorCreate, user: dict = Depends(get_current_user)):
+    await require_role(user, company_id, ["Owner", "Admin", "Manager", "Staff/Accountant"])
     vendor = {
         "vendor_id": f"vnd_{uuid.uuid4().hex[:10]}",
         "company_id": company_id,
@@ -684,6 +686,7 @@ async def get_expenses(company_id: str, category: Optional[str] = None, user: di
 
 @api_router.post("/companies/{company_id}/expenses", status_code=201)
 async def create_expense(company_id: str, data: ExpenseCreate, user: dict = Depends(get_current_user)):
+    await require_role(user, company_id, ["Owner", "Admin", "Manager", "Staff/Accountant"])
     expense = {
         "expense_id": f"exp_{uuid.uuid4().hex[:10]}",
         "company_id": company_id,
@@ -1315,6 +1318,7 @@ async def get_bills(company_id: str, user: dict = Depends(get_current_user)):
 
 @api_router.post("/companies/{company_id}/bills", status_code=201)
 async def create_bill(company_id: str, data: BillCreate, user: dict = Depends(get_current_user)):
+    await require_role(user, company_id, ["Owner", "Admin", "Manager", "Staff/Accountant"])
     bill = {
         "bill_id": f"bill_{uuid.uuid4().hex[:10]}",
         "company_id": company_id,
@@ -1365,6 +1369,7 @@ async def get_stock_receipts(company_id: str, user: dict = Depends(get_current_u
 
 @api_router.post("/companies/{company_id}/stock-receipts", status_code=201)
 async def create_stock_receipt(company_id: str, data: ReceiveStockCreate, user: dict = Depends(get_current_user)):
+    await require_role(user, company_id, ["Owner", "Admin", "Manager", "Staff/Accountant"])
     receipt = {
         "receipt_id": f"rcpt_{uuid.uuid4().hex[:10]}",
         "company_id": company_id,
@@ -1449,6 +1454,7 @@ async def get_trial_balance(company_id: str, as_of_date: Optional[str] = None, u
 
 @api_router.post("/companies/{company_id}/receive-payment")
 async def receive_payment_bulk(company_id: str, request: Request, user: dict = Depends(get_current_user)):
+    await require_role(user, company_id, ["Owner", "Admin", "Manager", "Staff/Accountant"])
     body = await request.json()
     customer_id = body.get("customer_id", "")
     payment_date = body.get("payment_date", datetime.now(timezone.utc).strftime("%Y-%m-%d"))
@@ -1529,6 +1535,7 @@ async def list_vendor_payments(company_id: str, vendor_id: Optional[str] = None,
 @api_router.post("/companies/{company_id}/pay-vendor")
 async def pay_vendor_bulk(company_id: str, request: Request, user: dict = Depends(get_current_user)):
     """Apply a single payment against one or more vendor bills."""
+    await require_role(user, company_id, ["Owner", "Admin", "Manager", "Staff/Accountant"])
     body = await request.json()
     vendor_id = body.get("vendor_id", "")
     payment_date = body.get("payment_date", datetime.now(timezone.utc).strftime("%Y-%m-%d"))
@@ -1582,6 +1589,7 @@ async def get_products(company_id: str, category: Optional[str] = None, user: di
 
 @api_router.post("/companies/{company_id}/products", status_code=201)
 async def create_product(company_id: str, data: ProductCreate, user: dict = Depends(get_current_user)):
+    await require_role(user, company_id, ["Owner", "Admin", "Manager", "Staff/Accountant"])
     product = {
         "product_id": f"prod_{uuid.uuid4().hex[:10]}",
         "company_id": company_id,

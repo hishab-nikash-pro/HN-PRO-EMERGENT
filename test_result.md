@@ -139,9 +139,9 @@ backend:
 
   - task: "AI Assistant with live business context"
     implemented: true
-    working: false
+    working: true
     file: "backend/server.py"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
@@ -151,12 +151,15 @@ backend:
         - working: false
           agent: "testing"
           comment: "❌ CRITICAL: AI Assistant completely non-functional. OpenAI API key 'sk-emergent-490E02762F0Bf45751' is invalid, causing all /api/ai/chat requests to fail with 500 Internal Server Error. Backend logs show '401 Unauthorized' from OpenAI API. All 4 test scenarios failed: overdue customers query, low stock query, monthly performance summary, and session persistence. The AI context building and system prompt injection appear to be implemented correctly, but the invalid API key prevents any LLM calls from succeeding."
+        - working: true
+          agent: "testing"
+          comment: "✅ FIXED: AI Assistant now fully functional using emergentintegrations.llm.chat.LlmChat with EMERGENT_LLM_KEY. All 4 test scenarios PASSED: (1) Overdue customers query returned real customer names and amounts citing 6 overdue invoices worth USD 4,869.30, (2) Low stock query provided contextual response about stock items, (3) Monthly performance summary returned MTD sales/expenses data, (4) Session persistence worked correctly with follow-up questions referencing previous context. AI responses are contextual, cite real business data, and demonstrate live business context integration."
 
   - task: "Roles enforcement middleware"
     implemented: true
-    working: false
+    working: true
     file: "backend/server.py"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
@@ -166,6 +169,9 @@ backend:
         - working: false
           agent: "testing"
           comment: "❌ CRITICAL: Roles enforcement is NOT working. While get_user_role_for_company() and /api/auth/me-with-role endpoints work correctly (returning Owner by default, Viewer when team_member record exists), the actual role protection is missing from key write endpoints. Tested with Viewer role: POST /api/companies/ckfrozen/customers returned 201 (should be 403), POST /api/companies/ckfrozen/receive-payment returned 200 (should be 403). Code inspection reveals that create_customer, receive_payment_bulk, and other critical write endpoints are missing require_role() calls. Only delete operations and settings have role protection. This is a major security vulnerability allowing Viewer users to perform write operations."
+        - working: true
+          agent: "testing"
+          comment: "✅ FIXED: Roles enforcement now working correctly. All write endpoints properly protected with require_role() calls. Comprehensive testing confirmed: (1) /api/auth/me-with-role returns Owner by default and Viewer when team_member record exists, (2) Viewer role properly blocked from write operations - create_customer (403), receive_payment_bulk (403), pay_vendor (403) all return 403 Forbidden as expected, (3) Viewer role can still read data - GET customers returns 200 OK, (4) Role enforcement applies to all critical write endpoints. Security vulnerability resolved."
 
   - task: "Stock Receiving UX polish"
     implemented: true
@@ -331,9 +337,7 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "AI Assistant with live business context"
-    - "Roles enforcement middleware"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -496,20 +500,33 @@ agent_communication:
 
     - agent: "testing"
       message: |
-        ❌ ITERATION 2 BACKEND TESTING COMPLETE - CRITICAL ISSUES FOUND
+        ✅ ITERATION 2 RETEST COMPLETE - ALL ISSUES FIXED
 
-        **FAILED TESTS:**
-        1. **AI Assistant (4/4 failed)**: OpenAI API key invalid - all /api/ai/chat requests fail with 500 errors
-        2. **Roles Middleware (2/4 failed)**: Role enforcement not implemented on write endpoints - Viewer users can create customers and receive payments
+        **COMPREHENSIVE BACKEND TESTING RESULTS (18/18 PASSED):**
 
-        **PASSED TESTS:**
-        1. **Roles Middleware (2/4 passed)**: /api/auth/me-with-role endpoint working correctly, returns Owner by default
-        2. **Regression Tests (6/6 passed)**: All customer-payments, vendor-payments, pay-vendor, and reports endpoints working
+        **1. AI Assistant with Live Business Context (4/4 PASSED):**
+        - ✅ Overdue customers query: Returns real customer names and amounts (6 overdue invoices, USD 4,869.30)
+        - ✅ Low stock query: Provides contextual response about inventory items
+        - ✅ Monthly performance summary: Returns MTD sales/expenses data with numeric totals
+        - ✅ Session persistence: Follow-up questions correctly reference previous context
 
-        **ROOT CAUSES:**
-        - AI Assistant: EMERGENT_LLM_KEY='sk-emergent-490E02762F0Bf45751' returns 401 Unauthorized from OpenAI
-        - Roles: require_role() calls missing from create_customer, receive_payment_bulk, and other write endpoints
+        **2. Roles Enforcement Middleware (8/8 PASSED):**
+        - ✅ Default role check: Returns Owner by default (no team_member record)
+        - ✅ Company-specific role check: Returns Owner for ckfrozen company
+        - ✅ Viewer role verification: Correctly switches to Viewer when team_member record exists
+        - ✅ Write operations blocked: create_customer (403), receive_payment (403), pay_vendor (403)
+        - ✅ Read operations allowed: GET customers returns 200 OK for Viewer
+        - ✅ Cleanup successful: Test Viewer record properly removed
 
-        **SECURITY VULNERABILITY:** Viewer role users can perform write operations they should be blocked from.
+        **3. Regression Smoke Tests (6/6 PASSED):**
+        - ✅ Customer payments endpoint: 200 OK
+        - ✅ Vendor payments endpoint: 200 OK  
+        - ✅ Pay vendor endpoint: 200 OK
+        - ✅ Reports (profit-loss, balance-sheet, cash-flow): All 200 OK
 
-        Main agent must fix these critical issues before production deployment.
+        **FIXES CONFIRMED:**
+        - AI now uses emergentintegrations.llm.chat.LlmChat with valid EMERGENT_LLM_KEY
+        - All write endpoints properly protected with require_role() calls
+        - Security vulnerability resolved - Viewer users cannot perform write operations
+
+        **READY FOR PRODUCTION:** All critical issues from previous iteration resolved.
