@@ -4,6 +4,7 @@ import { getInvoices } from '../lib/api';
 import AppShell from '../components/layout/AppShell';
 import { useNavigate } from 'react-router-dom';
 import { Plus, MagnifyingGlass, Funnel, Export, Printer } from '@phosphor-icons/react';
+import DateFilterPreset from '../components/DateFilterPreset';
 
 const STATUS_STYLES = {
   Draft: { bg: '#F2F4F6', color: '#434655' },
@@ -20,25 +21,8 @@ export default function SalesList() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [dateFilter, setDateFilter] = useState('');
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const navigate = useNavigate();
-
-  const getDateRange = (preset) => {
-    const today = new Date();
-    const d = (date) => date.toISOString().split('T')[0];
-    const startOf = (date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    switch (preset) {
-      case 'today': return { start: d(today), end: d(today) };
-      case 'yesterday': { const y = new Date(today); y.setDate(y.getDate() - 1); return { start: d(y), end: d(y) }; }
-      case 'this_week': { const s = new Date(today); s.setDate(s.getDate() - s.getDay()); return { start: d(s), end: d(today) }; }
-      case 'last_week': { const s = new Date(today); s.setDate(s.getDate() - s.getDay() - 7); const e = new Date(s); e.setDate(e.getDate() + 6); return { start: d(s), end: d(e) }; }
-      case 'this_month': return { start: `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-01`, end: d(today) };
-      case 'last_month': { const lm = new Date(today.getFullYear(), today.getMonth() - 1, 1); const le = new Date(today.getFullYear(), today.getMonth(), 0); return { start: d(lm), end: d(le) }; }
-      case 'this_year': return { start: `${today.getFullYear()}-01-01`, end: d(today) };
-      case 'last_year': return { start: `${today.getFullYear()-1}-01-01`, end: `${today.getFullYear()-1}-12-31` };
-      default: return null;
-    }
-  };
 
   useEffect(() => {
     if (!selectedCompany) return;
@@ -59,13 +43,11 @@ export default function SalesList() {
     const matchesSearch = inv.invoice_number?.toLowerCase().includes(search.toLowerCase()) ||
       inv.customer_name?.toLowerCase().includes(search.toLowerCase());
     if (!matchesSearch) return false;
-    if (dateFilter) {
-      const range = getDateRange(dateFilter);
-      if (range && inv.invoice_date) {
-        if (inv.invoice_date < range.start || inv.invoice_date > range.end) return false;
-      }
-    }
-    return true;
+    
+    const matchesDate = !dateRange.start || !dateRange.end || 
+      (inv.invoice_date >= dateRange.start && inv.invoice_date <= dateRange.end);
+    
+    return matchesDate;
   });
 
   return (
@@ -116,23 +98,6 @@ export default function SalesList() {
             <option value="Overdue">Overdue</option>
             <option value="Cancelled">Cancelled</option>
           </select>
-          <select
-            data-testid="sales-date-filter"
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
-            className="px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-1"
-            style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }}
-          >
-            <option value="">All Dates</option>
-            <option value="today">Today</option>
-            <option value="yesterday">Yesterday</option>
-            <option value="this_week">This Week</option>
-            <option value="last_week">Last Week</option>
-            <option value="this_month">This Month</option>
-            <option value="last_month">Last Month</option>
-            <option value="this_year">This Year</option>
-            <option value="last_year">Last Year</option>
-          </select>
           <button className="p-2 rounded-lg hover:bg-white transition-colors" style={{ color: '#434655' }}>
             <Export size={18} />
           </button>
@@ -140,6 +105,13 @@ export default function SalesList() {
             <Printer size={18} />
           </button>
         </div>
+
+        {/* Date Filter */}
+        <DateFilterPreset 
+          onDateChange={(start, end) => setDateRange({ start, end })}
+          storageKey="invoices_date_filter"
+          defaultPreset="this_month"
+        />
 
         {/* Table */}
         <div className="rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
