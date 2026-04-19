@@ -17,10 +17,12 @@ const navSections = [
       { path: '/sales', label: 'Sales', icon: ShoppingCart },
       { path: '/estimates', label: 'Estimates', icon: BookOpen },
       { path: '/customers', label: 'Customers', icon: Users },
+      { path: '/customer-payments', label: 'Customer Payments', icon: CurrencyDollar },
       { path: '/vendors', label: 'Vendors', icon: Truck },
       { path: '/products', label: 'Products', icon: Tag },
       { path: '/expenses', label: 'Expenses', icon: Receipt },
       { path: '/bills', label: 'Bills', icon: Wallet },
+      { path: '/vendor-payments', label: 'Vendor Payments', icon: Wallet },
       { path: '/inventory', label: 'Inventory', icon: Package },
       { path: '/receive-stock', label: 'Receive Stock', icon: ArrowDown },
     ]
@@ -71,7 +73,7 @@ export default function Sidebar({ onClose }) {
       <div className="flex-shrink-0 flex items-center justify-between h-14 px-4" style={{ borderBottom: '1px solid #E6E8EA' }}>
         {!collapsed && (
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold text-xs" style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold text-xs" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
               HN
             </div>
             <span className="font-semibold text-sm" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>
@@ -80,7 +82,7 @@ export default function Sidebar({ onClose }) {
           </div>
         )}
         {collapsed && (
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold text-xs mx-auto" style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold text-xs mx-auto" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
             HN
           </div>
         )}
@@ -120,7 +122,7 @@ export default function Sidebar({ onClose }) {
                     className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 ${collapsed ? 'justify-center' : ''}`}
                     style={{
                       background: isActive ? '#FFFFFF' : 'transparent',
-                      color: isActive ? '#0037B0' : '#434655',
+                      color: isActive ? '#0F2D5C' : '#434655',
                       boxShadow: isActive ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
                     }}
                     title={collapsed ? label : undefined}
@@ -142,7 +144,7 @@ export default function Sidebar({ onClose }) {
           onClick={handleNavClick}
           data-testid="nav-new-transaction"
           className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white transition-all ${collapsed ? 'justify-center' : ''}`}
-          style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}
+          style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}
         >
           <Plus size={16} weight="bold" />
           {!collapsed && <span>New Transaction</span>}

@@ -56,11 +56,11 @@ export default function JournalEntries() {
             <p className="text-sm mt-1" style={{ color: '#434655' }}>Double-entry accounting transactions</p></div>
           <div className="flex gap-2">
             <button className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><Export size={18} /></button>
-            <button data-testid="new-journal-entry-btn" onClick={() => setShowModal(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}><Plus size={16} weight="bold" /> New Entry</button>
+            <button data-testid="new-journal-entry-btn" onClick={() => setShowModal(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}><Plus size={16} weight="bold" /> New Entry</button>
           </div>
         </div>
         <div className="rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-          {loading ? <div className="flex items-center justify-center h-48"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0037B0', borderTopColor: 'transparent' }} /></div> : (
+          {loading ? <div className="flex items-center justify-center h-48"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} /></div> : (
             <table className="w-full text-sm">
               <thead><tr style={{ background: '#F7F9FB', borderBottom: '1px solid #C4C5D7' }}>
                 <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Entry #</th>
@@ -74,7 +74,7 @@ export default function JournalEntries() {
               <tbody>{entries.length === 0 ? <tr><td colSpan={7} className="text-center py-12 text-sm" style={{ color: '#434655' }}>No journal entries yet</td></tr> :
                 entries.map((e, i) => (
                   <tr key={e.entry_id} style={{ background: i % 2 === 0 ? '#FFFFFF' : '#FAFBFC', borderBottom: '1px solid #F2F4F6' }}>
-                    <td className="px-4 py-3 font-medium" style={{ color: '#0037B0' }}>{e.entry_number}</td>
+                    <td className="px-4 py-3 font-medium" style={{ color: '#0F2D5C' }}>{e.entry_number}</td>
                     <td className="px-4 py-3" style={{ color: '#434655' }}>{e.entry_date}</td>
                     <td className="px-4 py-3" style={{ color: '#191C1E' }}>{e.description}</td>
                     <td className="px-4 py-3 text-right font-semibold tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>${(e.total_debit || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
@@ -117,7 +117,7 @@ export default function JournalEntries() {
                     <div className="col-span-1 flex justify-center">{form.lines.length > 2 && <button onClick={() => removeLine(idx)} className="p-1 rounded" style={{ color: '#BA1A1A' }}><Trash size={14} /></button>}</div>
                   </div>
                 ))}
-                <button onClick={addLine} className="text-xs font-medium" style={{ color: '#0037B0' }}><Plus size={12} className="inline" /> Add Line</button>
+                <button onClick={addLine} className="text-xs font-medium" style={{ color: '#0F2D5C' }}><Plus size={12} className="inline" /> Add Line</button>
               </div>
               <div className="flex items-center justify-between p-3 rounded-lg" style={{ background: balanced ? '#dcfce7' : '#fef2f2' }}>
                 <div className="flex gap-6 text-sm">
@@ -130,7 +130,7 @@ export default function JournalEntries() {
               <div className="flex justify-end gap-2 mt-4">
                 <button onClick={() => setShowModal(false)} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ color: '#434655' }}>Cancel</button>
                 <button onClick={() => handleSave('Draft')} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ color: '#191C1E', boxShadow: '0 0 0 1px #C4C5D7' }}>Save Draft</button>
-                <button data-testid="post-journal-entry-btn" onClick={() => handleSave('Posted')} disabled={!balanced} className="px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50" style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>
+                <button data-testid="post-journal-entry-btn" onClick={() => handleSave('Posted')} disabled={!balanced} className="px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
                   <Check size={14} className="inline mr-1" /> Post Entry
                 </button>
               </div>

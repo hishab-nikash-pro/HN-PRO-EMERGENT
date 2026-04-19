@@ -25,7 +25,7 @@ export default function CashFlow() {
 
   useEffect(() => { loadData(); }, [selectedCompany]);
 
-  if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0037B0', borderTopColor: 'transparent' }} /></div></AppShell>;
+  if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} /></div></AppShell>;
 
   const d = data || {};
   const op = d.operating_activities || {};
@@ -52,7 +52,7 @@ export default function CashFlow() {
             <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-1" style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }} /></div>
           <div><label className="block text-xs font-medium mb-1" style={{ color: '#434655' }}>To</label>
             <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-1" style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }} /></div>
-          <div className="pt-5"><button onClick={loadData} className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>Apply</button></div>
+          <div className="pt-5"><button onClick={loadData} className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>Apply</button></div>
         </div>
 
         {/* KPI Row */}
@@ -61,7 +61,7 @@ export default function CashFlow() {
             { label: 'Collections', value: op.collections_from_customers, color: '#16a34a' },
             { label: 'Payments', value: op.payments_to_vendors, color: '#BA1A1A' },
             { label: 'Net Cash Flow', value: d.net_change_in_cash, color: (d.net_change_in_cash || 0) >= 0 ? '#16a34a' : '#BA1A1A' },
-            { label: 'Ending Cash', value: d.ending_cash, color: '#0037B0' },
+            { label: 'Ending Cash', value: d.ending_cash, color: '#0F2D5C' },
           ].map(({ label, value, color }) => (
             <div key={label} className="rounded-2xl p-5" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
               <p className="text-xs font-medium uppercase tracking-wider" style={{ color: '#434655' }}>{label}</p>
@@ -131,7 +131,7 @@ export default function CashFlow() {
               </div>
               <div className="flex justify-between py-3 font-bold text-base" style={{ borderTop: '3px double #191C1E' }}>
                 <span style={{ color: '#191C1E' }}>Ending Cash</span>
-                <span className="tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#0037B0' }}>
+                <span className="tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#0F2D5C' }}>
                   ${(d.ending_cash || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </span>
               </div>

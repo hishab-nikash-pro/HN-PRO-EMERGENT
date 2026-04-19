@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Package, Warning } from '@phosphor-icons/react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell } from 'recharts';
 
-const COLORS = ['#0037B0', '#1D4ED8', '#4D5B94', '#7F2500', '#BA1A1A', '#16a34a', '#434655'];
+const COLORS = ['#0F2D5C', '#0E7490', '#0E7490', '#7F2500', '#BA1A1A', '#16a34a', '#434655'];
 
 export default function InventoryValuation() {
   const { selectedCompany } = useCompany();
@@ -22,7 +22,7 @@ export default function InventoryValuation() {
       .finally(() => setLoading(false));
   }, [selectedCompany]);
 
-  if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0037B0', borderTopColor: 'transparent' }} /></div></AppShell>;
+  if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} /></div></AppShell>;
 
   const d = data || {};
 
@@ -41,7 +41,7 @@ export default function InventoryValuation() {
         <div className="grid grid-cols-3 gap-4">
           <div className="rounded-2xl p-6" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
             <p className="text-xs font-medium uppercase tracking-wider" style={{ color: '#434655' }}>Total Inventory Value</p>
-            <p className="text-3xl font-bold mt-2 tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#0037B0' }}>
+            <p className="text-3xl font-bold mt-2 tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#0F2D5C' }}>
               ${(d.total_value || 0).toLocaleString('en-US', { minimumFractionDigits: 0 })}
             </p>
           </div>
@@ -69,7 +69,7 @@ export default function InventoryValuation() {
                   <YAxis type="category" dataKey="category" tick={{ fontSize: 11, fill: '#434655' }} axisLine={false} tickLine={false} width={120} />
                   <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #E6E8EA', borderRadius: '8px', fontSize: '12px' }}
                     formatter={(value) => [`$${value.toLocaleString()}`, 'Value']} />
-                  <Bar dataKey="value" fill="#0037B0" radius={[0, 6, 6, 0]} maxBarSize={28} />
+                  <Bar dataKey="value" fill="#0F2D5C" radius={[0, 6, 6, 0]} maxBarSize={28} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

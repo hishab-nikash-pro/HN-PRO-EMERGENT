@@ -32,7 +32,7 @@ export default function InventoryDetail() {
     } catch (err) { console.error(err); }
   };
 
-  if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0037B0', borderTopColor: 'transparent' }} /></div></AppShell>;
+  if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} /></div></AppShell>;
   if (!item) return <AppShell><div className="text-center py-12" style={{ color: '#434655' }}>Item not found</div></AppShell>;
 
   const isLow = item.stock_on_hand <= item.reorder_point;
@@ -53,7 +53,7 @@ export default function InventoryDetail() {
           </div>
           <button data-testid="adjust-stock-btn" onClick={() => setShowAdjust(true)}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white"
-            style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>
+            style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
             <Package size={16} /> Adjust Stock
           </button>
         </div>
@@ -67,7 +67,7 @@ export default function InventoryDetail() {
                 {[
                   { label: 'On Hand', value: `${item.stock_on_hand} ${item.unit}`, color: isLow ? '#BA1A1A' : '#191C1E' },
                   { label: 'Reserved', value: `${item.reserved_stock} ${item.unit}`, color: '#434655' },
-                  { label: 'Available', value: `${item.available_stock} ${item.unit}`, color: '#0037B0' },
+                  { label: 'Available', value: `${item.available_stock} ${item.unit}`, color: '#0F2D5C' },
                   { label: 'Reorder Point', value: `${item.reorder_point} ${item.unit}`, color: '#434655' },
                 ].map(({ label, value, color }) => (
                   <div key={label} className="flex justify-between text-sm">
@@ -176,7 +176,7 @@ export default function InventoryDetail() {
               </div>
               <div className="flex justify-end gap-2 mt-6">
                 <button onClick={() => setShowAdjust(false)} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ color: '#434655' }}>Cancel</button>
-                <button data-testid="submit-adjust-btn" onClick={handleAdjust} className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>
+                <button data-testid="submit-adjust-btn" onClick={handleAdjust} className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
                   Adjust Stock
                 </button>
               </div>

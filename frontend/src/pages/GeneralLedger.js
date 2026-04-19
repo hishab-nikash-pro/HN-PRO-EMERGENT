@@ -34,9 +34,9 @@ export default function GeneralLedger() {
           <select value={accountFilter} onChange={(e) => setAccountFilter(e.target.value)} className="px-3 py-2 text-sm rounded-lg" style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }}><option value="">All Accounts</option>{accounts.map(a => <option key={a.account_id} value={a.code}>{a.code} - {a.name}</option>)}</select>
           <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="px-3 py-2 text-sm rounded-lg" style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }} />
           <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="px-3 py-2 text-sm rounded-lg" style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }} />
-          <button onClick={load} className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>Apply</button>
+          <button onClick={load} className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>Apply</button>
         </div>
-        {loading ? <div className="flex items-center justify-center h-48"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0037B0', borderTopColor: 'transparent' }} /></div> : (
+        {loading ? <div className="flex items-center justify-center h-48"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} /></div> : (
           <div className="space-y-4">
             {ledger.length === 0 ? <div className="rounded-2xl p-12 text-center" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}><p className="text-sm" style={{ color: '#434655' }}>No journal entries posted yet. Create and post journal entries to see the general ledger.</p></div> :
             ledger.map(acct => (
@@ -44,7 +44,7 @@ export default function GeneralLedger() {
                 <button onClick={() => setExpanded(prev => ({ ...prev, [acct.code]: !prev[acct.code] }))} className="w-full flex items-center justify-between px-5 py-3 text-left" style={{ background: '#F7F9FB' }}>
                   <div className="flex items-center gap-2">
                     {expanded[acct.code] ? <CaretDown size={14} /> : <CaretRight size={14} />}
-                    <span className="font-semibold text-sm" style={{ color: '#0037B0' }}>{acct.code}</span>
+                    <span className="font-semibold text-sm" style={{ color: '#0F2D5C' }}>{acct.code}</span>
                     <span className="font-semibold text-sm" style={{ color: '#191C1E' }}>{acct.name}</span>
                     <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: '#F2F4F6', color: '#434655' }}>{acct.type}</span>
                   </div>
@@ -59,7 +59,7 @@ export default function GeneralLedger() {
                       <tr style={{ background: '#F7F9FB' }}><td colSpan={3} className="px-4 py-2 text-xs font-medium" style={{ color: '#434655' }}>Opening Balance</td><td className="px-4 py-2 text-right tabular-nums text-xs">{acct.opening_balance > 0 ? `$${acct.opening_balance.toFixed(2)}` : ''}</td><td className="px-4 py-2 text-right tabular-nums text-xs">{acct.opening_balance < 0 ? `$${Math.abs(acct.opening_balance).toFixed(2)}` : ''}</td><td className="px-4 py-2 text-right font-semibold tabular-nums text-xs" style={{ fontFamily: 'Manrope, sans-serif' }}>${acct.opening_balance.toFixed(2)}</td></tr>
                       {(acct.entries || []).map((e, i) => (
                         <tr key={i} style={{ borderBottom: '1px solid #F2F4F6' }}>
-                          <td className="px-4 py-2 text-xs" style={{ color: '#434655' }}>{e.date}</td><td className="px-4 py-2 text-xs font-medium" style={{ color: '#0037B0' }}>{e.entry_number}</td><td className="px-4 py-2 text-xs" style={{ color: '#191C1E' }}>{e.description}</td>
+                          <td className="px-4 py-2 text-xs" style={{ color: '#434655' }}>{e.date}</td><td className="px-4 py-2 text-xs font-medium" style={{ color: '#0F2D5C' }}>{e.entry_number}</td><td className="px-4 py-2 text-xs" style={{ color: '#191C1E' }}>{e.description}</td>
                           <td className="px-4 py-2 text-right tabular-nums text-xs" style={{ fontFamily: 'Manrope, sans-serif' }}>{e.debit > 0 ? `$${e.debit.toFixed(2)}` : ''}</td>
                           <td className="px-4 py-2 text-right tabular-nums text-xs" style={{ fontFamily: 'Manrope, sans-serif' }}>{e.credit > 0 ? `$${e.credit.toFixed(2)}` : ''}</td>
                           <td className="px-4 py-2 text-right font-semibold tabular-nums text-xs" style={{ fontFamily: 'Manrope, sans-serif' }}>${(e.balance || 0).toFixed(2)}</td>

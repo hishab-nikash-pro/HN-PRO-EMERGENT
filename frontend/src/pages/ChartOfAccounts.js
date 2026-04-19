@@ -6,7 +6,7 @@ import { Plus, MagnifyingGlass, Export } from '@phosphor-icons/react';
 
 const TYPES = ['Asset', 'Liability', 'Equity', 'Income', 'Expense'];
 const SUB_TYPES = { Asset: ['Current Asset', 'Fixed Asset'], Liability: ['Current Liability', 'Long-Term'], Equity: ["Owner's Equity"], Income: ['Operating Revenue', 'Other Revenue'], Expense: ['Operating Expense', 'Cost of Sales'] };
-const TYPE_COLORS = { Asset: '#0037B0', Liability: '#BA1A1A', Equity: '#16a34a', Income: '#4D5B94', Expense: '#7F2500' };
+const TYPE_COLORS = { Asset: '#0F2D5C', Liability: '#BA1A1A', Equity: '#16a34a', Income: '#0E7490', Expense: '#7F2500' };
 
 export default function ChartOfAccounts() {
   const { selectedCompany } = useCompany();
@@ -35,7 +35,7 @@ export default function ChartOfAccounts() {
         <div className="flex items-center justify-between">
           <div><h1 className="text-2xl font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Chart of Accounts</h1>
             <p className="text-sm mt-1" style={{ color: '#434655' }}>Manage your accounting structure</p></div>
-          <button data-testid="add-account-btn" onClick={() => setShowModal(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}><Plus size={16} weight="bold" /> Add Account</button>
+          <button data-testid="add-account-btn" onClick={() => setShowModal(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}><Plus size={16} weight="bold" /> Add Account</button>
         </div>
         <div className="flex items-center gap-3">
           <div className="relative flex-1 max-w-xs"><MagnifyingGlass size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#434655' }} />
@@ -43,7 +43,7 @@ export default function ChartOfAccounts() {
           <button className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><Export size={18} /></button>
         </div>
         <div className="rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-          {loading ? <div className="flex items-center justify-center h-48"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0037B0', borderTopColor: 'transparent' }} /></div> : (
+          {loading ? <div className="flex items-center justify-center h-48"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} /></div> : (
             <table className="w-full text-sm">
               <thead><tr style={{ background: '#F7F9FB', borderBottom: '1px solid #C4C5D7' }}>
                 <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Code</th>
@@ -91,7 +91,7 @@ export default function ChartOfAccounts() {
               </div>
               <div className="flex justify-end gap-2 mt-6">
                 <button onClick={() => setShowModal(false)} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ color: '#434655' }}>Cancel</button>
-                <button data-testid="save-account-btn" onClick={handleSave} className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>Save Account</button>
+                <button data-testid="save-account-btn" onClick={handleSave} className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>Save Account</button>
               </div>
             </div>
           </div>

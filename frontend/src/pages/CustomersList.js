@@ -55,7 +55,7 @@ export default function CustomersList() {
             data-testid="create-customer-btn"
             onClick={() => setShowCreateModal(true)}
             className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90"
-            style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}
+            style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}
           >
             <Plus size={16} weight="bold" /> Add Customer
           </button>
@@ -78,7 +78,7 @@ export default function CustomersList() {
         <div className="rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
           {loading ? (
             <div className="flex items-center justify-center h-48">
-              <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0037B0', borderTopColor: 'transparent' }} />
+              <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} />
             </div>
           ) : (
             <table className="w-full text-sm">
@@ -105,7 +105,7 @@ export default function CustomersList() {
                   >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white" style={{ background: '#4D5B94' }}>
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white" style={{ background: '#0E7490' }}>
                           {c.name?.charAt(0)}
                         </div>
                         <span className="font-medium" style={{ color: '#191C1E' }}>{c.name}</span>
@@ -157,7 +157,7 @@ export default function CustomersList() {
               </div>
               <div className="flex justify-end gap-2 mt-6">
                 <button onClick={() => setShowCreateModal(false)} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ color: '#434655' }}>Cancel</button>
-                <button data-testid="save-customer-btn" onClick={handleCreateCustomer} className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>
+                <button data-testid="save-customer-btn" onClick={handleCreateCustomer} className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
                   Save Customer
                 </button>
               </div>

@@ -7,7 +7,7 @@ import { ArrowLeft, Printer, Copy, CurrencyDollar, Check, X } from '@phosphor-ic
 
 const STATUS_STYLES = {
   Draft: { bg: '#F2F4F6', color: '#434655' },
-  Sent: { bg: '#dbeafe', color: '#0037B0' },
+  Sent: { bg: '#dbeafe', color: '#0F2D5C' },
   'Partial Paid': { bg: '#fef3c7', color: '#92400e' },
   Paid: { bg: '#dcfce7', color: '#16a34a' },
   Overdue: { bg: '#fef2f2', color: '#BA1A1A' },
@@ -67,7 +67,7 @@ export default function InvoiceDetail() {
     return (
       <AppShell>
         <div className="flex items-center justify-center h-64">
-          <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0037B0', borderTopColor: 'transparent' }} />
+          <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} />
         </div>
       </AppShell>
     );
@@ -269,7 +269,7 @@ export default function InvoiceDetail() {
               </div>
               <div className="flex justify-end gap-2 mt-6">
                 <button onClick={() => setShowPaymentModal(false)} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ color: '#434655' }}>Cancel</button>
-                <button data-testid="submit-payment-btn" onClick={handleRecordPayment} className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>
+                <button data-testid="submit-payment-btn" onClick={handleRecordPayment} className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
                   Record Payment
                 </button>
               </div>

@@ -1430,6 +1430,100 @@ async def receive_payment_bulk(company_id: str, request: Request, user: dict = D
         total_applied += amount
     return {"status": "success", "total_applied": round(total_applied, 2), "invoices_updated": len(applications)}
 
+# ─── Customer Payments (Aggregate List) ───
+
+@api_router.get("/companies/{company_id}/customer-payments")
+async def list_customer_payments(company_id: str, customer_id: Optional[str] = None, user: dict = Depends(get_current_user)):
+    """Return a flat, sorted list of all customer payments drawn from invoices.payments."""
+    query = {"company_id": company_id}
+    if customer_id:
+        query["customer_id"] = customer_id
+    invoices = await db.invoices.find(query, {"_id": 0}).to_list(5000)
+    rows = []
+    for inv in invoices:
+        for p in inv.get("payments", []):
+            rows.append({
+                **p,
+                "invoice_id": inv.get("invoice_id"),
+                "invoice_number": inv.get("invoice_number"),
+                "customer_id": inv.get("customer_id"),
+                "customer_name": inv.get("customer_name"),
+                "invoice_total": inv.get("total", 0),
+            })
+    rows.sort(key=lambda x: x.get("payment_date", "") or x.get("recorded_at", ""), reverse=True)
+    total_received = round(sum(r.get("amount", 0) for r in rows), 2)
+    return {"payments": rows, "count": len(rows), "total_received": total_received}
+
+
+# ─── Vendor Payments (List + Bulk Pay) ───
+
+@api_router.get("/companies/{company_id}/vendor-payments")
+async def list_vendor_payments(company_id: str, vendor_id: Optional[str] = None, user: dict = Depends(get_current_user)):
+    """Return a flat, sorted list of all vendor payments drawn from bills.payments."""
+    query = {"company_id": company_id}
+    if vendor_id:
+        query["vendor_id"] = vendor_id
+    bills = await db.bills.find(query, {"_id": 0}).to_list(5000)
+    rows = []
+    for b in bills:
+        for p in b.get("payments", []):
+            rows.append({
+                **p,
+                "bill_id": b.get("bill_id"),
+                "bill_number": b.get("bill_number") or b.get("reference_number") or b.get("bill_id"),
+                "vendor_id": b.get("vendor_id"),
+                "vendor_name": b.get("vendor_name"),
+                "bill_total": b.get("total", 0),
+            })
+    rows.sort(key=lambda x: x.get("payment_date", "") or x.get("recorded_at", ""), reverse=True)
+    total_paid = round(sum(r.get("amount", 0) for r in rows), 2)
+    return {"payments": rows, "count": len(rows), "total_paid": total_paid}
+
+
+@api_router.post("/companies/{company_id}/pay-vendor")
+async def pay_vendor_bulk(company_id: str, request: Request, user: dict = Depends(get_current_user)):
+    """Apply a single payment against one or more vendor bills."""
+    body = await request.json()
+    vendor_id = body.get("vendor_id", "")
+    payment_date = body.get("payment_date", datetime.now(timezone.utc).strftime("%Y-%m-%d"))
+    payment_method = body.get("payment_method", "Bank Transfer")
+    reference = body.get("reference", "")
+    paid_from = body.get("paid_from", "1000")
+    applications = body.get("applications", [])
+    total_applied = 0
+    for app in applications:
+        bill_id = app.get("bill_id", "")
+        amount = float(app.get("amount", 0) or 0)
+        if not bill_id or amount <= 0:
+            continue
+        bill = await db.bills.find_one({"bill_id": bill_id}, {"_id": 0})
+        if not bill:
+            continue
+        new_paid = bill.get("amount_paid", 0) + amount
+        new_balance = bill.get("total", 0) - new_paid
+        new_status = "Paid" if new_balance <= 0 else "Partial"
+        pmt_entry = {
+            "payment_id": f"pmt_{uuid.uuid4().hex[:8]}",
+            "amount": amount,
+            "payment_date": payment_date,
+            "payment_method": payment_method,
+            "reference": reference,
+            "paid_from": paid_from,
+            "recorded_at": datetime.now(timezone.utc).isoformat(),
+            "recorded_by": user["user_id"],
+        }
+        await db.bills.update_one(
+            {"bill_id": bill_id},
+            {"$set": {"amount_paid": new_paid, "balance_due": max(0, new_balance), "status": new_status},
+             "$push": {"payments": pmt_entry}}
+        )
+        if bill.get("vendor_id"):
+            await db.vendors.update_one({"vendor_id": bill["vendor_id"]}, {"$inc": {"payable_balance": -amount}})
+        total_applied += amount
+    return {"status": "success", "total_applied": round(total_applied, 2), "bills_updated": len(applications), "vendor_id": vendor_id}
+
+
+
 # ─── Products Routes ───
 
 @api_router.get("/companies/{company_id}/products")

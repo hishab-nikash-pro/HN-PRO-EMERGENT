@@ -27,7 +27,7 @@ export default function CustomerStatementPrint() {
       .finally(() => setLoading(false));
   }, [selectedCompany, customerId]);
 
-  if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0037B0', borderTopColor: 'transparent' }} /></div></AppShell>;
+  if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} /></div></AppShell>;
   if (!data) return <AppShell><div className="text-center py-12" style={{ color: '#434655' }}>Statement not found</div></AppShell>;
 
   const info = COMPANY_INFO[selectedCompany?.company_id] || COMPANY_INFO.ckfrozen;
@@ -41,24 +41,24 @@ export default function CustomerStatementPrint() {
             <button onClick={() => navigate(`/customers/${customerId}`)} className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><ArrowLeft size={20} /></button>
             <h1 className="text-xl font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Customer Statement</h1>
           </div>
-          <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>
+          <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
             <Printer size={16} /> Print
           </button>
         </div>
 
         <div id="statement-print" className="mx-auto" style={{ width: '210mm', minHeight: '297mm', background: '#FFFFFF', padding: '15mm', fontFamily: 'Inter, Arial, sans-serif', fontSize: '11px', color: '#191C1E', boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
           {/* Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '3px solid #0037B0', paddingBottom: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '3px solid #0F2D5C', paddingBottom: '16px' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: 'linear-gradient(135deg, #0037B0, #1D4ED8)', color: 'white', fontWeight: 'bold', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>CK</div>
+                <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: 'linear-gradient(135deg, #0F2D5C, #0E7490)', color: 'white', fontWeight: 'bold', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>CK</div>
                 <h1 style={{ fontFamily: 'Manrope, sans-serif', fontSize: '16px', fontWeight: 800, margin: 0, color: '#191C1E' }}>{info.name}</h1>
               </div>
               <p style={{ fontSize: '10px', color: '#434655', margin: '4px 0 0 50px' }}>{info.address}</p>
               <p style={{ fontSize: '10px', color: '#434655', margin: '2px 0 0 50px' }}>PH: {info.phone} | Email: {info.email}</p>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <h2 style={{ fontFamily: 'Manrope, sans-serif', fontSize: '20px', fontWeight: 800, color: '#0037B0', margin: '0 0 8px' }}>STATEMENT</h2>
+              <h2 style={{ fontFamily: 'Manrope, sans-serif', fontSize: '20px', fontWeight: 800, color: '#0F2D5C', margin: '0 0 8px' }}>STATEMENT</h2>
               <p style={{ fontSize: '10px', color: '#434655', margin: '2px 0' }}>Date: {data.statement_date}</p>
             </div>
           </div>
@@ -99,7 +99,7 @@ export default function CustomerStatementPrint() {
                 <tr key={i} style={{ borderBottom: '1px solid #E6E8EA' }}>
                   <td style={{ padding: '6px 10px', fontSize: '10px' }}>{t.date}</td>
                   <td style={{ padding: '6px 10px', fontSize: '10px' }}>
-                    <span style={{ fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', background: t.type === 'Payment' ? '#dcfce7' : '#dbeafe', color: t.type === 'Payment' ? '#16a34a' : '#0037B0' }}>{t.type}</span>
+                    <span style={{ fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', background: t.type === 'Payment' ? '#dcfce7' : '#dbeafe', color: t.type === 'Payment' ? '#16a34a' : '#0F2D5C' }}>{t.type}</span>
                   </td>
                   <td style={{ padding: '6px 10px', fontSize: '10px', color: '#434655' }}>{t.ref}</td>
                   <td style={{ padding: '6px 10px', fontSize: '10px' }}>{t.description}</td>

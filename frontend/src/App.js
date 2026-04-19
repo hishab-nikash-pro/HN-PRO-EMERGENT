@@ -39,6 +39,10 @@ import BillsList from './pages/BillsList';
 import ReceiveStock from './pages/ReceiveStock';
 import GeneralLedger from './pages/GeneralLedger';
 import TrialBalance from './pages/TrialBalance';
+import CustomerPayments from './pages/CustomerPayments';
+import NewCustomerPayment from './pages/NewCustomerPayment';
+import VendorPayments from './pages/VendorPayments';
+import NewVendorPayment from './pages/NewVendorPayment';
 import './App.css';
 
 function AppRouter() {
@@ -159,6 +163,18 @@ function AppRouter() {
       <Route path="/trial-balance" element={
         <ProtectedRoute><TrialBalance /></ProtectedRoute>
       } />
+      <Route path="/customer-payments" element={
+        <ProtectedRoute><CustomerPayments /></ProtectedRoute>
+      } />
+      <Route path="/customer-payments/new" element={
+        <ProtectedRoute><NewCustomerPayment /></ProtectedRoute>
+      } />
+      <Route path="/vendor-payments" element={
+        <ProtectedRoute><VendorPayments /></ProtectedRoute>
+      } />
+      <Route path="/vendor-payments/new" element={
+        <ProtectedRoute><NewVendorPayment /></ProtectedRoute>
+      } />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
@@ -171,7 +187,7 @@ function PlaceholderPage({ title, desc }) {
     <AppShell>
       <div className="flex flex-col items-center justify-center h-[60vh]">
         <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6" style={{ background: '#F2F4F6' }}>
-          <div className="w-8 h-8 rounded-lg" style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)', opacity: 0.3 }} />
+          <div className="w-8 h-8 rounded-lg" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)', opacity: 0.3 }} />
         </div>
         <h2 className="text-xl font-bold mb-2" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>{title}</h2>
         <p className="text-sm text-center max-w-md" style={{ color: '#434655' }}>{desc}</p>

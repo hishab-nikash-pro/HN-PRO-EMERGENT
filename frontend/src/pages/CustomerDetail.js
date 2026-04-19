@@ -30,7 +30,7 @@ export default function CustomerDetail() {
   }, [selectedCompany, customerId]);
 
   if (loading) {
-    return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0037B0', borderTopColor: 'transparent' }} /></div></AppShell>;
+    return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} /></div></AppShell>;
   }
   if (!customer) {
     return <AppShell><div className="text-center py-12" style={{ color: '#434655' }}>Customer not found</div></AppShell>;
@@ -58,7 +58,7 @@ export default function CustomerDetail() {
               data-testid="create-invoice-for-customer"
               onClick={() => navigate('/sales/new')}
               className="px-4 py-2 rounded-lg text-sm font-medium text-white"
-              style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}
+              style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}
             >
               Create Invoice
             </button>
@@ -70,7 +70,7 @@ export default function CustomerDetail() {
           <div className="space-y-6">
             <div className="rounded-2xl p-6" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold text-white" style={{ background: '#4D5B94' }}>
+                <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold text-white" style={{ background: '#0E7490' }}>
                   {customer.name?.charAt(0)}
                 </div>
                 <div>
@@ -133,13 +133,13 @@ export default function CustomerDetail() {
                       className="cursor-pointer transition-colors hover:bg-[#F7F9FB]"
                       style={{ background: i % 2 === 0 ? '#FFFFFF' : '#FAFBFC', borderBottom: '1px solid #F2F4F6' }}
                     >
-                      <td className="px-4 py-3 font-medium" style={{ color: '#0037B0' }}>{inv.invoice_number}</td>
+                      <td className="px-4 py-3 font-medium" style={{ color: '#0F2D5C' }}>{inv.invoice_number}</td>
                       <td className="px-4 py-3" style={{ color: '#434655' }}>{inv.invoice_date}</td>
                       <td className="px-4 py-3">
                         <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
                           style={{
                             background: inv.status === 'Paid' ? '#dcfce7' : inv.status === 'Overdue' ? '#fef2f2' : '#dbeafe',
-                            color: inv.status === 'Paid' ? '#16a34a' : inv.status === 'Overdue' ? '#BA1A1A' : '#0037B0'
+                            color: inv.status === 'Paid' ? '#16a34a' : inv.status === 'Overdue' ? '#BA1A1A' : '#0F2D5C'
                           }}>
                           {inv.status}
                         </span>

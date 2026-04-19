@@ -25,7 +25,7 @@ export default function ProfitLoss() {
 
   useEffect(() => { loadData(); }, [selectedCompany]);
 
-  if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0037B0', borderTopColor: 'transparent' }} /></div></AppShell>;
+  if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} /></div></AppShell>;
 
   const d = data || {};
 
@@ -63,7 +63,7 @@ export default function ProfitLoss() {
           <div className="pt-5">
             <button data-testid="apply-date-filter" onClick={loadData}
               className="px-4 py-2 rounded-lg text-sm font-medium text-white"
-              style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>
+              style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
               Apply
             </button>
           </div>
@@ -72,7 +72,7 @@ export default function ProfitLoss() {
         {/* KPI Row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: 'Total Income', value: d.total_income, color: '#0037B0' },
+            { label: 'Total Income', value: d.total_income, color: '#0F2D5C' },
             { label: 'Gross Profit', value: d.gross_profit, sub: `${d.gross_margin}% margin`, color: '#16a34a' },
             { label: 'Operating Expenses', value: d.operating_expenses, color: '#7F2500' },
             { label: 'Net Profit', value: d.net_profit, sub: `${d.net_margin}% margin`, color: d.net_profit >= 0 ? '#16a34a' : '#BA1A1A' },
@@ -139,7 +139,7 @@ export default function ProfitLoss() {
                   <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #E6E8EA', borderRadius: '8px', fontSize: '12px' }}
                     formatter={(v) => [`$${v.toLocaleString()}`, '']} />
                   <Legend wrapperStyle={{ fontSize: '11px' }} />
-                  <Bar dataKey="income" fill="#0037B0" name="Income" radius={[4, 4, 0, 0]} maxBarSize={20} />
+                  <Bar dataKey="income" fill="#0F2D5C" name="Income" radius={[4, 4, 0, 0]} maxBarSize={20} />
                   <Bar dataKey="expenses" fill="#BA1A1A" name="Expenses" radius={[4, 4, 0, 0]} maxBarSize={20} />
                 </BarChart>
               </ResponsiveContainer>

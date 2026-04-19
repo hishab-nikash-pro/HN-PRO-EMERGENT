@@ -52,7 +52,7 @@ export default function AddExpense() {
           </div>
           <button data-testid="save-expense-btn" onClick={handleSave} disabled={saving}
             className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90"
-            style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>
+            style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
             <FloppyDisk size={16} /> Save Expense
           </button>
         </div>

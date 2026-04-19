@@ -127,7 +127,7 @@ export default function CreateInvoice() {
               onClick={() => handleSave('Sent')}
               disabled={saving}
               className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}
+              style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}
             >
               Send Invoice
             </button>
@@ -209,7 +209,7 @@ export default function CreateInvoice() {
             <div className="rounded-2xl p-6" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Line Items</h3>
-                <button data-testid="add-line-item-btn" onClick={addItem} className="flex items-center gap-1 text-xs font-medium" style={{ color: '#0037B0' }}>
+                <button data-testid="add-line-item-btn" onClick={addItem} className="flex items-center gap-1 text-xs font-medium" style={{ color: '#0F2D5C' }}>
                   <Plus size={14} /> Add Item
                 </button>
               </div>

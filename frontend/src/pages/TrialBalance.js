@@ -4,7 +4,7 @@ import { getTrialBalance } from '../lib/api';
 import AppShell from '../components/layout/AppShell';
 import { Export, Printer, Check, X } from '@phosphor-icons/react';
 
-const TYPE_COLORS = { Asset: '#0037B0', Liability: '#BA1A1A', Equity: '#16a34a', Income: '#4D5B94', Expense: '#7F2500' };
+const TYPE_COLORS = { Asset: '#0F2D5C', Liability: '#BA1A1A', Equity: '#16a34a', Income: '#0E7490', Expense: '#7F2500' };
 
 export default function TrialBalance() {
   const { selectedCompany } = useCompany();
@@ -16,7 +16,7 @@ export default function TrialBalance() {
     getTrialBalance(selectedCompany.company_id, asOfDate || undefined).then(r => setData(r.data)).catch(console.error).finally(() => setLoading(false)); };
   useEffect(() => { load(); }, [selectedCompany]);
 
-  if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0037B0', borderTopColor: 'transparent' }} /></div></AppShell>;
+  if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} /></div></AppShell>;
 
   const d = data || { rows: [], total_debit: 0, total_credit: 0, balanced: true };
 
@@ -29,7 +29,7 @@ export default function TrialBalance() {
         </div>
         <div className="flex items-center gap-3">
           <input type="date" value={asOfDate} onChange={(e) => setAsOfDate(e.target.value)} className="px-3 py-2 text-sm rounded-lg" style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }} />
-          <button onClick={load} className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>Apply</button>
+          <button onClick={load} className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>Apply</button>
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full" style={{ background: d.balanced ? '#dcfce7' : '#fef2f2' }}>
             {d.balanced ? <Check size={14} style={{ color: '#16a34a' }} /> : <X size={14} style={{ color: '#BA1A1A' }} />}
             <span className="text-xs font-semibold" style={{ color: d.balanced ? '#16a34a' : '#BA1A1A' }}>{d.balanced ? 'Balanced' : 'Not Balanced'}</span>

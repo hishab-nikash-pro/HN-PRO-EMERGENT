@@ -25,7 +25,7 @@ export default function SalesReport() {
 
   useEffect(() => { loadData(); }, [selectedCompany]);
 
-  if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0037B0', borderTopColor: 'transparent' }} /></div></AppShell>;
+  if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} /></div></AppShell>;
 
   const d = data || {};
 
@@ -52,16 +52,16 @@ export default function SalesReport() {
             <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-1" style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }} /></div>
           <div><label className="block text-xs font-medium mb-1" style={{ color: '#434655' }}>To</label>
             <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-1" style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }} /></div>
-          <div className="pt-5"><button onClick={loadData} className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>Apply</button></div>
+          <div className="pt-5"><button onClick={loadData} className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>Apply</button></div>
         </div>
 
         {/* KPIs */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: 'Total Sales', value: d.total_sales, color: '#0037B0' },
+            { label: 'Total Sales', value: d.total_sales, color: '#0F2D5C' },
             { label: 'Collected', value: d.total_collected, color: '#16a34a' },
             { label: 'Invoice Count', value: d.invoice_count, fmt: false, color: '#191C1E' },
-            { label: 'Avg Invoice', value: d.average_invoice, color: '#4D5B94' },
+            { label: 'Avg Invoice', value: d.average_invoice, color: '#0E7490' },
           ].map(({ label, value, color, fmt = true }) => (
             <div key={label} className="rounded-2xl p-5" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
               <p className="text-xs font-medium uppercase tracking-wider" style={{ color: '#434655' }}>{label}</p>
@@ -84,7 +84,7 @@ export default function SalesReport() {
                   <YAxis tick={{ fontSize: 11, fill: '#434655' }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${(v/1000).toFixed(0)}k`} />
                   <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #E6E8EA', borderRadius: '8px', fontSize: '12px' }}
                     formatter={(v) => [`$${v.toLocaleString()}`, 'Sales']} />
-                  <Bar dataKey="amount" fill="#0037B0" radius={[6, 6, 0, 0]} maxBarSize={40} />
+                  <Bar dataKey="amount" fill="#0F2D5C" radius={[6, 6, 0, 0]} maxBarSize={40} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -95,7 +95,7 @@ export default function SalesReport() {
             <h3 className="text-sm font-semibold mb-4" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>By Status</h3>
             <div className="space-y-3">
               {(d.by_status || []).map((s, i) => {
-                const colors = { Paid: '#16a34a', Sent: '#0037B0', Draft: '#434655', Overdue: '#BA1A1A', 'Partial Paid': '#92400e', Cancelled: '#434655' };
+                const colors = { Paid: '#16a34a', Sent: '#0F2D5C', Draft: '#434655', Overdue: '#BA1A1A', 'Partial Paid': '#92400e', Cancelled: '#434655' };
                 return (
                   <div key={s.status} className="flex items-center justify-between py-2" style={{ borderBottom: '1px solid #F2F4F6' }}>
                     <div className="flex items-center gap-2">

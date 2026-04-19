@@ -24,7 +24,7 @@ export default function InvoicePrint() {
       .finally(() => setLoading(false));
   }, [selectedCompany, invoiceId]);
 
-  if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0037B0', borderTopColor: 'transparent' }} /></div></AppShell>;
+  if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} /></div></AppShell>;
   if (!invoice) return <AppShell><div className="text-center py-12" style={{ color: '#434655' }}>Invoice not found</div></AppShell>;
 
   // Fill empty rows up to at least 15 for the table
@@ -42,7 +42,7 @@ export default function InvoicePrint() {
           </div>
           <button data-testid="print-btn" onClick={() => window.print()}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white"
-            style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>
+            style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
             <Printer size={16} /> Print
           </button>
         </div>

@@ -12,7 +12,15 @@ const TABS = [
   { id: 'import', label: 'CSV Import', icon: Upload },
 ];
 
-const ROLES = ['Owner', 'Admin', 'Accountant', 'Sales', 'Warehouse', 'Viewer'];
+const ROLES = ['Owner', 'Admin', 'Manager', 'Staff/Accountant', 'Viewer'];
+
+const ROLE_DESCRIPTIONS = {
+  'Owner': 'Full access across all modules, companies, users, permissions, and settings.',
+  'Admin': 'Full access across all modules and team administration.',
+  'Manager': 'Access to operational modules and reports. Cannot manage users or company setup.',
+  'Staff/Accountant': 'Day-to-day entry: invoices, payments, expenses, stock receiving.',
+  'Viewer': 'Read-only access to dashboard and reports.',
+};
 
 export default function Settings() {
   const { selectedCompany } = useCompany();
@@ -90,7 +98,7 @@ export default function Settings() {
           {(tab === 'company' || tab === 'invoice') && (
             <button data-testid="save-settings-btn" onClick={handleSaveSettings} disabled={saving}
               className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white"
-              style={{ background: saved ? '#16a34a' : 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>
+              style={{ background: saved ? '#16a34a' : 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
               {saved ? <><Check size={16} /> Saved</> : saving ? 'Saving...' : 'Save Settings'}
             </button>
           )}
@@ -103,7 +111,7 @@ export default function Settings() {
             return (
               <button key={t.id} data-testid={`settings-tab-${t.id}`} onClick={() => setTab(t.id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${tab === t.id ? '' : 'hover:bg-white/50'}`}
-                style={{ background: tab === t.id ? '#FFFFFF' : 'transparent', color: tab === t.id ? '#0037B0' : '#434655', boxShadow: tab === t.id ? '0 1px 2px rgba(0,0,0,0.06)' : 'none' }}>
+                style={{ background: tab === t.id ? '#FFFFFF' : 'transparent', color: tab === t.id ? '#0F2D5C' : '#434655', boxShadow: tab === t.id ? '0 1px 2px rgba(0,0,0,0.06)' : 'none' }}>
                 <Icon size={16} /> {t.label}
               </button>
             );
@@ -198,13 +206,12 @@ export default function Settings() {
             <div className="rounded-2xl p-6" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
               <h3 className="text-sm font-semibold mb-4" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Team Members</h3>
               <div className="mb-4 p-3 rounded-lg" style={{ background: '#F7F9FB' }}>
-                <h4 className="text-xs font-semibold uppercase mb-2" style={{ color: '#434655' }}>Role Permissions</h4>
-                <div className="grid grid-cols-3 gap-2 text-xs" style={{ color: '#434655' }}>
-                  <div><Shield size={12} className="inline mr-1" style={{ color: '#0037B0' }} /><strong>Owner/Admin</strong>: Full access</div>
-                  <div><Shield size={12} className="inline mr-1" style={{ color: '#4D5B94' }} /><strong>Accountant</strong>: AR/AP, Reports, Expenses</div>
-                  <div><Shield size={12} className="inline mr-1" style={{ color: '#16a34a' }} /><strong>Sales</strong>: Invoices, Customers</div>
-                  <div><Shield size={12} className="inline mr-1" style={{ color: '#7F2500' }} /><strong>Warehouse</strong>: Inventory only</div>
-                  <div><Shield size={12} className="inline mr-1" style={{ color: '#434655' }} /><strong>Viewer</strong>: Read-only dashboard</div>
+                <h4 className="text-xs font-semibold uppercase mb-2" style={{ color: '#475569' }}>Role Permissions</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs" style={{ color: '#475569' }}>
+                  <div><Shield size={12} className="inline mr-1" style={{ color: '#0F2D5C' }} /><strong>Owner / Admin</strong>: Full access across all modules, users, and settings.</div>
+                  <div><Shield size={12} className="inline mr-1" style={{ color: '#0E7490' }} /><strong>Manager</strong>: All operational modules + reports. No user/company setup.</div>
+                  <div><Shield size={12} className="inline mr-1" style={{ color: '#047857' }} /><strong>Staff / Accountant</strong>: Invoices, payments, expenses, stock receiving.</div>
+                  <div><Shield size={12} className="inline mr-1" style={{ color: '#475569' }} /><strong>Viewer</strong>: Read-only dashboard and reports.</div>
                 </div>
               </div>
               {members.length === 0 ? (
@@ -225,7 +232,7 @@ export default function Settings() {
                         <td className="px-4 py-3 font-medium" style={{ color: '#191C1E' }}>{m.name}</td>
                         <td className="px-4 py-3" style={{ color: '#434655' }}>{m.email}</td>
                         <td className="px-4 py-3">
-                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: '#dbeafe', color: '#0037B0' }}>{m.role}</span>
+                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: '#dbeafe', color: '#0F2D5C' }}>{m.role}</span>
                         </td>
                         <td className="px-4 py-3">
                           <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: '#dcfce7', color: '#16a34a' }}>{m.status}</span>
@@ -252,7 +259,7 @@ export default function Settings() {
                   </div>
                   <button data-testid="run-daily-check" onClick={handleDailyCheck}
                     className="px-4 py-2 rounded-lg text-sm font-medium text-white"
-                    style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>
+                    style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
                     Run Now
                   </button>
                 </div>
@@ -289,7 +296,7 @@ export default function Settings() {
               <div key={type} className="rounded-2xl p-6" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: '#F2F4F6' }}><Icon size={20} style={{ color: '#0037B0' }} /></div>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: '#F2F4F6' }}><Icon size={20} style={{ color: '#0F2D5C' }} /></div>
                     <div>
                       <h3 className="text-sm font-semibold" style={{ color: '#191C1E' }}>{title}</h3>
                       <p className="text-xs mt-0.5" style={{ color: '#434655' }}>{desc}</p>
@@ -297,7 +304,7 @@ export default function Settings() {
                   </div>
                   <label data-testid={`import-${type}-btn`}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors hover:bg-[#F2F4F6]"
-                    style={{ color: '#0037B0', boxShadow: '0 0 0 1px #0037B0' }}>
+                    style={{ color: '#0F2D5C', boxShadow: '0 0 0 1px #0F2D5C' }}>
                     <Upload size={16} /> Upload CSV
                     <input type="file" accept=".csv" className="hidden" onChange={(e) => handleCSVImport(type, e)} />
                   </label>

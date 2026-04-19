@@ -142,8 +142,19 @@ export const getTrialBalance = (companyId, asOfDate) => {
   return api.get(`/companies/${companyId}/trial-balance${qs}`);
 };
 
-// Receive Payment
+// Receive Payment (Customer)
 export const receivePaymentBulk = (companyId, data) => api.post(`/companies/${companyId}/receive-payment`, data);
+export const listCustomerPayments = (companyId, customerId) => {
+  const qs = customerId ? `?customer_id=${customerId}` : '';
+  return api.get(`/companies/${companyId}/customer-payments${qs}`);
+};
+
+// Pay Vendor
+export const payVendorBulk = (companyId, data) => api.post(`/companies/${companyId}/pay-vendor`, data);
+export const listVendorPayments = (companyId, vendorId) => {
+  const qs = vendorId ? `?vendor_id=${vendorId}` : '';
+  return api.get(`/companies/${companyId}/vendor-payments${qs}`);
+};
 
 // Reports
 export const getProfitLoss = (companyId, startDate, endDate) => {

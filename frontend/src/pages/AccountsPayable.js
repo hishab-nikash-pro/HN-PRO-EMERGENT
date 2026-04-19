@@ -20,13 +20,13 @@ export default function AccountsPayable() {
       .finally(() => setLoading(false));
   }, [selectedCompany]);
 
-  if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0037B0', borderTopColor: 'transparent' }} /></div></AppShell>;
+  if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} /></div></AppShell>;
 
   const d = data || {};
   const agingData = [
     { label: 'Current', value: d.aging?.current || 0, color: '#16a34a' },
-    { label: '1-30 Days', value: d.aging?.['1_30'] || 0, color: '#0037B0' },
-    { label: '31-60 Days', value: d.aging?.['31_60'] || 0, color: '#4D5B94' },
+    { label: '1-30 Days', value: d.aging?.['1_30'] || 0, color: '#0F2D5C' },
+    { label: '31-60 Days', value: d.aging?.['31_60'] || 0, color: '#0E7490' },
     { label: '61-90 Days', value: d.aging?.['61_90'] || 0, color: '#7F2500' },
     { label: '90+ Days', value: d.aging?.over_90 || 0, color: '#BA1A1A' },
   ];
@@ -93,7 +93,7 @@ export default function AccountsPayable() {
           <div className="lg:col-span-2 rounded-2xl p-6" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Vendor Balances</h3>
-              <button onClick={() => navigate('/vendors')} className="text-xs font-medium flex items-center gap-1" style={{ color: '#0037B0' }}>
+              <button onClick={() => navigate('/vendors')} className="text-xs font-medium flex items-center gap-1" style={{ color: '#0F2D5C' }}>
                 View All <ArrowRight size={12} />
               </button>
             </div>
@@ -104,7 +104,7 @@ export default function AccountsPayable() {
                   onClick={() => navigate(`/vendors/${v.vendor_id}`)}
                   style={{ borderBottom: '1px solid #F2F4F6' }}>
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white" style={{ background: '#0037B0' }}>
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white" style={{ background: '#0F2D5C' }}>
                       {v.name?.charAt(0)}
                     </div>
                     <div>

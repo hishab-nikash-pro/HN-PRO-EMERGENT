@@ -11,10 +11,10 @@ export default function ProtectedRoute({ children, requireCompany = true }) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#F7F9FB' }}>
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold" style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
             HN
           </div>
-          <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0037B0', borderTopColor: 'transparent' }} />
+          <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} />
         </div>
       </div>
     );

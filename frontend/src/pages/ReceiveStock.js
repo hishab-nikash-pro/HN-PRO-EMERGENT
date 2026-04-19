@@ -35,10 +35,10 @@ export default function ReceiveStock() {
       <div data-testid="receive-stock-page" className="space-y-6">
         <div className="flex items-center justify-between">
           <div><h1 className="text-2xl font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Receive Stock</h1><p className="text-sm mt-1" style={{ color: '#434655' }}>Receive inventory from vendors</p></div>
-          <button data-testid="new-stock-receipt-btn" onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}><Plus size={16} weight="bold" /> Receive Stock</button>
+          <button data-testid="new-stock-receipt-btn" onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}><Plus size={16} weight="bold" /> Receive Stock</button>
         </div>
         <div className="rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-          {loading ? <div className="flex items-center justify-center h-48"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0037B0', borderTopColor: 'transparent' }} /></div> : (
+          {loading ? <div className="flex items-center justify-center h-48"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} /></div> : (
             <table className="w-full text-sm">
               <thead><tr style={{ background: '#F7F9FB', borderBottom: '1px solid #C4C5D7' }}>
                 <th className="text-left px-4 py-3 text-xs font-semibold uppercase" style={{ color: '#434655' }}>Date</th><th className="text-left px-4 py-3 text-xs font-semibold uppercase" style={{ color: '#434655' }}>Vendor</th><th className="text-left px-4 py-3 text-xs font-semibold uppercase" style={{ color: '#434655' }}>Reference</th><th className="text-right px-4 py-3 text-xs font-semibold uppercase" style={{ color: '#434655' }}>Items</th><th className="text-right px-4 py-3 text-xs font-semibold uppercase" style={{ color: '#434655' }}>Total Cost</th>
@@ -69,10 +69,10 @@ export default function ReceiveStock() {
                     <div className="text-xs font-semibold text-right tabular-nums">${((parseFloat(item.quantity) || 0) * (parseFloat(item.unit_cost) || 0)).toFixed(2)}</div>
                   </div>
                 ))}
-                <button onClick={() => setForm({ ...form, items: [...form.items, { item_id: '', product_name: '', quantity: 0, unit_cost: 0 }] })} className="text-xs font-medium" style={{ color: '#0037B0' }}><Plus size={12} className="inline" /> Add Line</button>
+                <button onClick={() => setForm({ ...form, items: [...form.items, { item_id: '', product_name: '', quantity: 0, unit_cost: 0 }] })} className="text-xs font-medium" style={{ color: '#0F2D5C' }}><Plus size={12} className="inline" /> Add Line</button>
               </div>
               <div className="text-right text-sm font-bold mb-4">Total: ${form.total_cost.toFixed(2)}</div>
-              <div className="flex justify-end gap-2"><button onClick={() => setShowCreate(false)} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ color: '#434655' }}>Cancel</button><button data-testid="save-stock-receipt-btn" onClick={handleSave} className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>Save Receipt</button></div>
+              <div className="flex justify-end gap-2"><button onClick={() => setShowCreate(false)} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ color: '#434655' }}>Cancel</button><button data-testid="save-stock-receipt-btn" onClick={handleSave} className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>Save Receipt</button></div>
             </div>
           </div>
         )}

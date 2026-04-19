@@ -43,7 +43,7 @@ export default function ExpensesList() {
             data-testid="add-expense-btn"
             onClick={() => navigate('/expenses/new')}
             className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90"
-            style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}
+            style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}
           >
             <Plus size={16} weight="bold" /> Add Expense
           </button>
@@ -90,7 +90,7 @@ export default function ExpensesList() {
         <div className="rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
           {loading ? (
             <div className="flex items-center justify-center h-48">
-              <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0037B0', borderTopColor: 'transparent' }} />
+              <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} />
             </div>
           ) : (
             <table className="w-full text-sm">

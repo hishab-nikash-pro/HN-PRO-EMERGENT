@@ -27,7 +27,7 @@ export default function PackingListPrint() {
       .finally(() => setLoading(false));
   }, [selectedCompany, invoiceId]);
 
-  if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0037B0', borderTopColor: 'transparent' }} /></div></AppShell>;
+  if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} /></div></AppShell>;
   if (!invoice) return <AppShell><div className="text-center py-12" style={{ color: '#434655' }}>Invoice not found</div></AppShell>;
 
   const info = COMPANY_INFO[selectedCompany?.company_id] || COMPANY_INFO.ckfrozen;
@@ -40,14 +40,14 @@ export default function PackingListPrint() {
             <button onClick={() => navigate(`/sales/${invoiceId}`)} className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><ArrowLeft size={20} /></button>
             <h1 className="text-xl font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Packing List</h1>
           </div>
-          <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>
+          <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
             <Printer size={16} /> Print
           </button>
         </div>
 
         <div id="packing-print" className="mx-auto" style={{ width: '210mm', minHeight: '297mm', background: '#FFFFFF', padding: '15mm', fontFamily: 'Inter, Arial, sans-serif', fontSize: '11px', color: '#191C1E', boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
-          <div style={{ textAlign: 'center', marginBottom: '20px', borderBottom: '3px solid #0037B0', paddingBottom: '16px' }}>
-            <h1 style={{ fontFamily: 'Manrope, sans-serif', fontSize: '22px', fontWeight: 800, color: '#0037B0', margin: '0 0 4px' }}>PACKING LIST</h1>
+          <div style={{ textAlign: 'center', marginBottom: '20px', borderBottom: '3px solid #0F2D5C', paddingBottom: '16px' }}>
+            <h1 style={{ fontFamily: 'Manrope, sans-serif', fontSize: '22px', fontWeight: 800, color: '#0F2D5C', margin: '0 0 4px' }}>PACKING LIST</h1>
             <p style={{ fontSize: '14px', fontWeight: 700, margin: '0 0 4px', color: '#191C1E' }}>{info.name}</p>
             <p style={{ fontSize: '10px', color: '#434655', margin: 0 }}>{info.address} | PH: {info.phone} | FAX: {info.fax}</p>
           </div>

@@ -72,7 +72,7 @@ export default function Header({ onMenuToggle }) {
             className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white"
             style={{ color: '#191C1E' }}
           >
-            <Buildings size={18} style={{ color: '#0037B0' }} />
+            <Buildings size={18} style={{ color: '#0F2D5C' }} />
             <span className="hidden md:inline max-w-[160px] truncate">
               {selectedCompany?.short_name || 'Select Company'}
             </span>
@@ -94,7 +94,7 @@ export default function Header({ onMenuToggle }) {
                     borderBottom: '1px solid #F2F4F6'
                   }}
                 >
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white" style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
                     {c.short_name.charAt(0)}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -123,7 +123,7 @@ export default function Header({ onMenuToggle }) {
           {user?.picture ? (
             <img src={user.picture} alt="" className="w-8 h-8 rounded-full object-cover" />
           ) : (
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: '#4D5B94' }}>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: '#0E7490' }}>
               {user?.name?.charAt(0) || 'U'}
             </div>
           )}

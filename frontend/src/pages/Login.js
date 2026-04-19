@@ -10,7 +10,7 @@ export default function Login() {
   return (
     <div className="min-h-screen flex" style={{ background: '#F7F9FB' }}>
       {/* Left panel - branding */}
-      <div className="hidden lg:flex lg:w-1/2 items-center justify-center relative" style={{ background: 'linear-gradient(135deg, #0037B0 0%, #1D4ED8 50%, #4D5B94 100%)' }}>
+      <div className="hidden lg:flex lg:w-1/2 items-center justify-center relative" style={{ background: 'linear-gradient(135deg, #0F2D5C 0%, #0E7490 50%, #0E7490 100%)' }}>
         <div className="text-center text-white px-12 relative z-10">
           <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-bold mx-auto mb-8" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(12px)' }}>
             HN
@@ -39,7 +39,7 @@ export default function Login() {
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-3 mb-10">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold" style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
               HN
             </div>
             <span className="text-xl font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Hishab Nikash Pro</span>
@@ -102,12 +102,12 @@ export default function Login() {
                   <input type="checkbox" disabled className="rounded" />
                   Remember me
                 </label>
-                <span className="text-xs opacity-50" style={{ color: '#0037B0' }}>Forgot password?</span>
+                <span className="text-xs opacity-50" style={{ color: '#0F2D5C' }}>Forgot password?</span>
               </div>
               <button
                 disabled
                 className="w-full py-2.5 rounded-lg text-sm font-medium text-white opacity-50 cursor-not-allowed"
-                style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}
+                style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}
               >
                 Sign in
               </button>

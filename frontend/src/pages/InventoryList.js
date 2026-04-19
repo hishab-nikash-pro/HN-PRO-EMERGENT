@@ -68,7 +68,7 @@ export default function InventoryList() {
             </button>
             <button data-testid="add-inventory-btn" onClick={() => {}}
               className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>
+              style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
               <Plus size={16} weight="bold" /> Add Item
             </button>
           </div>
@@ -77,8 +77,8 @@ export default function InventoryList() {
         {/* Summary */}
         <div className="grid grid-cols-4 gap-4">
           {[
-            { label: 'Total Inventory Value', value: `$${totalValue.toLocaleString('en-US', { minimumFractionDigits: 0 })}`, color: '#0037B0' },
-            { label: 'Total Items in Stock', value: totalItems.toLocaleString(), color: '#4D5B94' },
+            { label: 'Total Inventory Value', value: `$${totalValue.toLocaleString('en-US', { minimumFractionDigits: 0 })}`, color: '#0F2D5C' },
+            { label: 'Total Items in Stock', value: totalItems.toLocaleString(), color: '#0E7490' },
             { label: 'Product SKUs', value: filtered.length, color: '#191C1E' },
             { label: 'Low Stock Alerts', value: lowStockCount, color: lowStockCount > 0 ? '#BA1A1A' : '#16a34a' },
           ].map(({ label, value, color }) => (
@@ -123,7 +123,7 @@ export default function InventoryList() {
         <div className="rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
           {loading ? (
             <div className="flex items-center justify-center h-48">
-              <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0037B0', borderTopColor: 'transparent' }} />
+              <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} />
             </div>
           ) : (
             <table className="w-full text-sm">
@@ -150,7 +150,7 @@ export default function InventoryList() {
                       onClick={() => navigate(`/inventory/${item.item_id}`)}
                       className="cursor-pointer transition-colors hover:bg-[#F7F9FB]"
                       style={{ background: i % 2 === 0 ? '#FFFFFF' : '#FAFBFC', borderBottom: '1px solid #F2F4F6' }}>
-                      <td className="px-4 py-3 font-medium" style={{ color: '#0037B0' }}>{item.sku}</td>
+                      <td className="px-4 py-3 font-medium" style={{ color: '#0F2D5C' }}>{item.sku}</td>
                       <td className="px-4 py-3 font-medium" style={{ color: '#191C1E' }}>{item.product_name}</td>
                       <td className="px-4 py-3"><span className="text-[11px] font-medium px-2 py-0.5 rounded-full" style={{ background: '#F2F4F6', color: '#434655' }}>{item.category}</span></td>
                       <td className="px-4 py-3" style={{ color: '#434655' }}>{item.warehouse}</td>

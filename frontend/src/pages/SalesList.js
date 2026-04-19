@@ -7,7 +7,7 @@ import { Plus, MagnifyingGlass, Funnel, Export, Printer } from '@phosphor-icons/
 
 const STATUS_STYLES = {
   Draft: { bg: '#F2F4F6', color: '#434655' },
-  Sent: { bg: '#dbeafe', color: '#0037B0' },
+  Sent: { bg: '#dbeafe', color: '#0F2D5C' },
   'Partial Paid': { bg: '#fef3c7', color: '#92400e' },
   Paid: { bg: '#dcfce7', color: '#16a34a' },
   Overdue: { bg: '#fef2f2', color: '#BA1A1A' },
@@ -81,7 +81,7 @@ export default function SalesList() {
             data-testid="create-invoice-btn"
             onClick={() => navigate('/sales/new')}
             className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90"
-            style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}
+            style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}
           >
             <Plus size={16} weight="bold" /> Create Invoice
           </button>
@@ -145,7 +145,7 @@ export default function SalesList() {
         <div className="rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
           {loading ? (
             <div className="flex items-center justify-center h-48">
-              <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0037B0', borderTopColor: 'transparent' }} />
+              <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} />
             </div>
           ) : (
             <table className="w-full text-sm">
@@ -175,7 +175,7 @@ export default function SalesList() {
                       className="cursor-pointer transition-colors hover:bg-[#F7F9FB]"
                       style={{ background: i % 2 === 0 ? '#FFFFFF' : '#FAFBFC', borderBottom: '1px solid #F2F4F6' }}
                     >
-                      <td className="px-4 py-3 font-medium" style={{ color: '#0037B0' }}>{inv.invoice_number}</td>
+                      <td className="px-4 py-3 font-medium" style={{ color: '#0F2D5C' }}>{inv.invoice_number}</td>
                       <td className="px-4 py-3" style={{ color: '#191C1E' }}>{inv.customer_name}</td>
                       <td className="px-4 py-3" style={{ color: '#434655' }}>{inv.invoice_date}</td>
                       <td className="px-4 py-3" style={{ color: '#434655' }}>{inv.due_date}</td>

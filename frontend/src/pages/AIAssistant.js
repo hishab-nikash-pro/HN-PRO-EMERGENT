@@ -19,10 +19,10 @@ const SUGGESTIONS = [
 ];
 
 const ACTION_BUTTONS = [
-  { id: 'create_invoice', label: 'Create Invoice', icon: Invoice, path: '/sales/new', color: '#0037B0' },
+  { id: 'create_invoice', label: 'Create Invoice', icon: Invoice, path: '/sales/new', color: '#0F2D5C' },
   { id: 'enter_bill', label: 'Enter Vendor Bill', icon: Wallet, path: '/bills', color: '#BA1A1A' },
   { id: 'enter_expense', label: 'Record Expense', icon: Receipt, path: '/expenses/new', color: '#7F2500' },
-  { id: 'enter_inventory', label: 'Receive Stock', icon: Package, path: '/receive-stock', color: '#4D5B94' },
+  { id: 'enter_inventory', label: 'Receive Stock', icon: Package, path: '/receive-stock', color: '#0E7490' },
   { id: 'view_reports', label: 'View Reports', icon: ChartBar, path: '/reports', color: '#16a34a' },
   { id: 'journal_entry', label: 'Journal Entry', icon: Notebook, path: '/journal-entries', color: '#191C1E' },
 ];
@@ -153,7 +153,7 @@ export default function AIAssistant() {
           <div className="rounded-2xl h-full overflow-y-auto p-4" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Chat History</h3>
-              <button onClick={handleNewChat} className="p-1 rounded hover:bg-[#F2F4F6]" style={{ color: '#0037B0' }}><Plus size={16} /></button>
+              <button onClick={handleNewChat} className="p-1 rounded hover:bg-[#F2F4F6]" style={{ color: '#0F2D5C' }}><Plus size={16} /></button>
             </div>
             <div className="space-y-1">
               {sessions.map(s => (
@@ -172,7 +172,7 @@ export default function AIAssistant() {
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
                 <Robot size={22} color="white" />
               </div>
               <div>
@@ -182,7 +182,7 @@ export default function AIAssistant() {
             </div>
             <div className="flex items-center gap-2">
               <button data-testid="ai-history-btn" onClick={() => setShowSessions(!showSessions)} className="p-2 rounded-lg hover:bg-white transition-colors" style={{ color: '#434655' }}><ClockCounterClockwise size={20} /></button>
-              <button data-testid="ai-new-chat" onClick={handleNewChat} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)' }}><Plus size={14} /> New Chat</button>
+              <button data-testid="ai-new-chat" onClick={handleNewChat} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}><Plus size={14} /> New Chat</button>
             </div>
           </div>
 
@@ -214,7 +214,7 @@ export default function AIAssistant() {
                     return (
                       <button key={s.label} onClick={() => handleSend(s.prompt)}
                         className="text-left p-3 rounded-xl transition-colors hover:bg-[#F7F9FB]" style={{ border: '1px solid #E6E8EA' }}>
-                        <Icon size={18} style={{ color: '#0037B0' }} />
+                        <Icon size={18} style={{ color: '#0F2D5C' }} />
                         <p className="text-xs font-medium mt-2" style={{ color: '#191C1E' }}>{s.label}</p>
                       </button>
                     );
@@ -225,7 +225,7 @@ export default function AIAssistant() {
               messages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[78%] rounded-2xl px-4 py-3`}
-                    style={{ background: msg.role === 'user' ? '#0037B0' : '#F2F4F6', color: msg.role === 'user' ? '#FFFFFF' : '#191C1E' }}>
+                    style={{ background: msg.role === 'user' ? '#0F2D5C' : '#F2F4F6', color: msg.role === 'user' ? '#FFFFFF' : '#191C1E' }}>
                     <div className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</div>
                     {/* Extracted data action */}
                     {msg.extractedData && (
@@ -259,7 +259,7 @@ export default function AIAssistant() {
             {loading && (
               <div className="flex justify-start">
                 <div className="rounded-2xl px-4 py-3 flex items-center gap-2" style={{ background: '#F2F4F6' }}>
-                  <SpinnerGap size={16} className="animate-spin" style={{ color: '#0037B0' }} />
+                  <SpinnerGap size={16} className="animate-spin" style={{ color: '#0F2D5C' }} />
                   <span className="text-xs" style={{ color: '#434655' }}>Thinking...</span>
                 </div>
               </div>
@@ -305,7 +305,7 @@ export default function AIAssistant() {
             {/* Send */}
             <button data-testid="ai-send-btn" onClick={() => handleSend()} disabled={loading || !input.trim()}
               className="p-2.5 rounded-lg transition-opacity"
-              style={{ background: 'linear-gradient(135deg, #0037B0, #1D4ED8)', opacity: loading || !input.trim() ? 0.5 : 1 }}>
+              style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)', opacity: loading || !input.trim() ? 0.5 : 1 }}>
               <PaperPlaneRight size={18} color="white" />
             </button>
           </div>

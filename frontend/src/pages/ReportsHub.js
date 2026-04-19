@@ -6,7 +6,7 @@ const reportCategories = [
   {
     title: 'Financial Reports',
     icon: CurrencyDollar,
-    color: '#0037B0',
+    color: '#0F2D5C',
     reports: [
       { name: 'Profit & Loss', desc: 'Income, expenses, and net profit', path: '/reports/profit-loss' },
       { name: 'Balance Sheet', desc: 'Assets, liabilities, and equity', path: '/reports/balance-sheet' },
@@ -16,7 +16,7 @@ const reportCategories = [
   {
     title: 'Sales Reports',
     icon: ChartBar,
-    color: '#1D4ED8',
+    color: '#0E7490',
     reports: [
       { name: 'Sales Report', desc: 'Sales volume, trends, and top customers', path: '/reports/sales' },
       { name: 'Invoice Aging', desc: 'Outstanding invoice aging analysis', path: '/receivables' },
@@ -34,7 +34,7 @@ const reportCategories = [
   {
     title: 'Inventory Reports',
     icon: Package,
-    color: '#4D5B94',
+    color: '#0E7490',
     reports: [
       { name: 'Inventory Valuation', desc: 'Total value by category and item', path: '/inventory/valuation' },
       { name: 'Stock Movement', desc: 'Inventory movement history', path: '/inventory' },

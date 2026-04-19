@@ -25,7 +25,7 @@ export default function VendorDetail() {
   }, [selectedCompany, vendorId]);
 
   if (loading) {
-    return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0037B0', borderTopColor: 'transparent' }} /></div></AppShell>;
+    return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} /></div></AppShell>;
   }
   if (!vendor) {
     return <AppShell><div className="text-center py-12" style={{ color: '#434655' }}>Vendor not found</div></AppShell>;
@@ -46,7 +46,7 @@ export default function VendorDetail() {
           <div className="space-y-6">
             <div className="rounded-2xl p-6" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold text-white" style={{ background: '#0037B0' }}>
+                <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold text-white" style={{ background: '#0F2D5C' }}>
                   {vendor.name?.charAt(0)}
                 </div>
                 <div>
