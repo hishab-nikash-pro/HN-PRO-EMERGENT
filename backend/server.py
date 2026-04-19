@@ -16,7 +16,9 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone, timedelta
-from openai import AsyncOpenAI from fastapi.staticfiles import StaticFiles from fastapi.responses import FileResponse
+from openai import AsyncOpenAI
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 # Compatibility shim replacing emergentintegrations
 _openai_client = None
 def _get_openai_client():
