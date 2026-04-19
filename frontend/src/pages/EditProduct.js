@@ -16,7 +16,7 @@ export default function EditProduct() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     name: '', description: '', category: 'Frozen Fish', unit: 'kg', cost_price: 0, selling_price: 0,
-    case_price: 0, case_quantity: 1, weight_info: '', sku: ''
+    case_price: 0, units_per_case: 1, cases_on_hand: 0, available_cases: 0, weight_info: '', sku: ''
   });
 
   useEffect(() => {
@@ -32,7 +32,9 @@ export default function EditProduct() {
           cost_price: p.cost_price || 0,
           selling_price: p.selling_price || 0,
           case_price: p.case_price || 0,
-          case_quantity: p.case_quantity || 1,
+          units_per_case: p.units_per_case || p.case_quantity || 1,
+          cases_on_hand: p.cases_on_hand || 0,
+          available_cases: p.available_cases || p.cases_on_hand || 0,
           weight_info: p.weight_info || '',
           sku: p.sku || ''
         });
@@ -135,8 +137,21 @@ export default function EditProduct() {
                 style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }} />
             </div>
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: '#434655' }}>Case Quantity</label>
-              <input type="number" step="1" value={form.case_quantity} onChange={(e) => setForm({ ...form, case_quantity: parseInt(e.target.value) || 1 })}
+              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: '#434655' }}>Units per Case</label>
+              <input type="number" step="1" min="1" value={form.units_per_case} onChange={(e) => setForm({ ...form, units_per_case: parseInt(e.target.value) || 1 })}
+                placeholder="e.g., 12"
+                className="w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-1"
+                style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }} />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: '#434655' }}>Cases on Hand</label>
+              <input type="number" step="0.01" min="0" value={form.cases_on_hand} onChange={(e) => setForm({ ...form, cases_on_hand: parseFloat(e.target.value) || 0 })}
+                className="w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-1"
+                style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }} />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: '#434655' }}>Available Cases</label>
+              <input type="number" step="0.01" min="0" value={form.available_cases} onChange={(e) => setForm({ ...form, available_cases: parseFloat(e.target.value) || 0 })}
                 className="w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-1"
                 style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }} />
             </div>

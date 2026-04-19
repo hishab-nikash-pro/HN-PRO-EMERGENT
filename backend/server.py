@@ -194,13 +194,18 @@ class ProductCreate(BaseModel):
     description: Optional[str] = ""
     category: Optional[str] = ""
     unit: str = "pcs"
+    units_per_case: int = 1  # How many units in one case (e.g., 1 case = 12 units)
     cost_price: float = 0
     selling_price: float = 0
     case_price: Optional[float] = 0
-    case_quantity: Optional[int] = 1
+    cases_on_hand: float = 0  # Stock quantity in cases
+    available_cases: float = 0  # Available stock in cases (not reserved/committed)
     weight_info: Optional[str] = ""
     sku: Optional[str] = ""
     status: str = "Active"
+    # Legacy fields for backward compatibility
+    case_quantity: Optional[int] = 1  # Deprecated, use units_per_case
+    stock_on_hand: Optional[float] = 0  # Deprecated, use cases_on_hand
 
 class EmailRequest(BaseModel):
     recipient_email: str
@@ -1609,10 +1614,17 @@ async def get_products(company_id: str, category: Optional[str] = None, user: di
 @api_router.post("/companies/{company_id}/products", status_code=201)
 async def create_product(company_id: str, data: ProductCreate, user: dict = Depends(get_current_user)):
     await require_role(user, company_id, ["Owner", "Admin", "Manager", "Staff/Accountant"])
+    
+    # Handle backward compatibility: if case_quantity provided but not units_per_case, use case_quantity
+    units_per_case = data.units_per_case if data.units_per_case > 0 else (data.case_quantity or 1)
+    
     product = {
         "product_id": f"prod_{uuid.uuid4().hex[:10]}",
         "company_id": company_id,
-        **data.model_dump(),
+        **data.model_dump(exclude={"case_quantity", "stock_on_hand"}),
+        "units_per_case": units_per_case,
+        "cases_on_hand": data.cases_on_hand,
+        "available_cases": data.available_cases,
         "sku": data.sku or f"SKU-{uuid.uuid4().hex[:6].upper()}",
         "created_at": datetime.now(timezone.utc).isoformat(),
         "created_by": user["user_id"]
@@ -1630,9 +1642,15 @@ async def get_product(company_id: str, product_id: str, user: dict = Depends(get
 
 @api_router.put("/companies/{company_id}/products/{product_id}")
 async def update_product(company_id: str, product_id: str, data: ProductCreate, user: dict = Depends(get_current_user)):
+    # Handle backward compatibility
+    units_per_case = data.units_per_case if data.units_per_case > 0 else (data.case_quantity or 1)
+    
+    update_data = data.model_dump(exclude={"case_quantity", "stock_on_hand"})
+    update_data["units_per_case"] = units_per_case
+    
     result = await db.products.update_one(
         {"company_id": company_id, "product_id": product_id},
-        {"$set": data.model_dump()}
+        {"$set": update_data}
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Product not found")

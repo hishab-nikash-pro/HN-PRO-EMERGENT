@@ -60,13 +60,24 @@ export default function ProductDetail() {
           </div>
 
           <div className="rounded-2xl p-6 space-y-4" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-            <h3 className="text-sm font-semibold" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Pricing</h3>
+            <h3 className="text-sm font-semibold" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Pricing & Conversion</h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between"><span style={{ color: '#434655' }}>Cost Price:</span> <span className="font-semibold tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>${(product.cost_price || 0).toFixed(2)}</span></div>
               <div className="flex justify-between"><span style={{ color: '#434655' }}>Selling Price:</span> <span className="font-semibold tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#0E7490' }}>${(product.selling_price || 0).toFixed(2)}</span></div>
               <div className="flex justify-between"><span style={{ color: '#434655' }}>Case Price:</span> <span className="font-semibold tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>${(product.case_price || 0).toFixed(2)}</span></div>
-              <div className="flex justify-between"><span style={{ color: '#434655' }}>Case Quantity:</span> <span className="font-semibold" style={{ color: '#191C1E' }}>{product.case_quantity || 1}</span></div>
+              <div className="flex justify-between"><span style={{ color: '#434655' }}>Units per Case:</span> <span className="font-semibold" style={{ color: '#191C1E' }}>{product.units_per_case || product.case_quantity || 1} {product.unit}</span></div>
               <div className="flex justify-between"><span style={{ color: '#434655' }}>Margin:</span> <span className="font-semibold" style={{ color: '#16a34a' }}>{product.selling_price > 0 ? (((product.selling_price - product.cost_price) / product.selling_price) * 100).toFixed(1) : '0.0'}%</span></div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl p-6 space-y-4" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+            <h3 className="text-sm font-semibold" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Stock (Cases)</h3>
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between"><span style={{ color: '#434655' }}>Cases on Hand:</span> <span className="font-bold tabular-nums text-lg" style={{ fontFamily: 'Manrope, sans-serif', color: '#0F2D5C' }}>{(product.cases_on_hand || 0).toFixed(2)}</span></div>
+              <div className="flex justify-between"><span style={{ color: '#434655' }}>Available Cases:</span> <span className="font-semibold tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#0E7490' }}>{(product.available_cases || product.cases_on_hand || 0).toFixed(2)}</span></div>
+              <div className="text-xs px-3 py-2 rounded-lg" style={{ background: '#F7F9FB', color: '#434655' }}>
+                <span className="font-medium">In Units:</span> {((product.cases_on_hand || 0) * (product.units_per_case || product.case_quantity || 1)).toFixed(0)} {product.unit}
+              </div>
             </div>
           </div>
         </div>
