@@ -332,15 +332,21 @@ frontend:
 
 metadata:
   created_by: "main_agent"
-  version: "3.0"
-  test_sequence: 3
-  run_ui: false
+  version: "4.0"
+  test_sequence: 4
+  run_ui: true
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "End-to-end Invoice → Customer Payment → AR verification"
+    - "End-to-end Bill → Vendor Payment → AP verification"
+    - "Stock Receiving → Inventory update verification"
+    - "Reports P&L, Balance Sheet, AR, AP by date range"
+    - "AI Assistant business context queries"
+    - "Company switching data isolation"
   stuck_tasks: []
-  test_all: false
-  test_priority: "high_first"
+  test_all: true
+  test_priority: "e2e_workflows"
 
 agent_communication:
     - agent: "main"
@@ -530,3 +536,73 @@ agent_communication:
         - Security vulnerability resolved - Viewer users cannot perform write operations
 
         **READY FOR PRODUCTION:** All critical issues from previous iteration resolved.
+    - agent: "main"
+      message: |
+        🎯 USER VERIFICATION REQUEST - COMPREHENSIVE E2E TESTING
+
+        User has forked into new session and wants to verify the complete application end-to-end
+        before adding any new features. This is a STABILITY CHECK before proceeding with future work.
+
+        **TEST SCOPE:** Full end-to-end workflows (backend + frontend + UI + data verification)
+
+        **CRITICAL FLOWS TO TEST:**
+
+        1. **Invoice → Customer Payment → AR Drop**
+           - Navigate to /invoices/new → create new invoice for existing customer
+           - Verify invoice appears in /invoices list
+           - Go to /customer-payments/new → record payment against that invoice
+           - Verify: invoice balance_due decreases, customer open_balance drops, payment shows in list
+           - Check /receivables report to confirm AR total reflects the payment
+
+        2. **Vendor Bill → Vendor Payment → AP Drop**
+           - Navigate to /bills/new → create new bill for existing vendor
+           - Verify bill appears in /bills list
+           - Go to /vendor-payments/new → record payment against that bill
+           - Verify: bill balance_due decreases, vendor payable_balance drops, payment shows in list
+           - Check /payables report to confirm AP total reflects the payment
+
+        3. **Stock Receiving → Inventory Update**
+           - Navigate to /receive-stock → select vendor, add product rows with quantities
+           - Submit and verify success
+           - Check product inventory count increased correctly
+
+        4. **Reports by Date Range**
+           - Navigate to /reports/profit-loss → test date range filters (e.g., Jan 1 - Dec 31, 2026)
+           - Navigate to /reports/balance-sheet → test as_of_date
+           - Navigate to /receivables → verify customer balances and aging
+           - Navigate to /payables → verify vendor balances
+           - Test CSV Export and Print buttons work without errors
+
+        5. **AI Assistant Business Queries**
+           - Navigate to /ai-assistant
+           - Ask: "Which customers have overdue invoices?"
+           - Verify: Response references real customer names and amounts from business data
+           - Ask: "What's my current inventory status?"
+           - Verify: Response is contextual and mentions real products
+           - Test session persistence with follow-up question
+
+        6. **Company Switching Data Isolation**
+           - On any page (e.g., /dashboard), switch company from "CK Frozen Fish & Food Inc." to another (e.g., "Haor Heritage Inc.")
+           - Verify: All numbers, customer/vendor lists, invoices refresh to show ONLY the new company's data
+           - Switch back and verify data returns to original company
+
+        **AUTH SETUP:**
+        Use Emergent Google OAuth for frontend testing. Session token `test_session_ukrrqssgkvg` available for backend.
+        Test with company: ckfrozen (primary), then test company switching.
+
+        **SUCCESS CRITERIA:**
+        - All 6 workflow scenarios complete without errors
+        - Data updates propagate correctly across related entities
+        - UI shows correct real-time updates
+        - Reports export without errors
+        - Company switching maintains proper data isolation
+
+        **REPORT FORMAT:**
+        For each workflow, report:
+        - ✅ PASSED or ❌ FAILED
+        - Screenshots at key steps
+        - Any data inconsistencies, UI bugs, or broken functionality
+        - Priority level: CRITICAL / HIGH / MEDIUM / LOW
+
+        Please test thoroughly and report all findings. This is USER VERIFICATION before next phase.
+
