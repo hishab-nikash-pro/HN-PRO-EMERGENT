@@ -40,6 +40,14 @@ export default function VendorDetail() {
             <h1 className="text-2xl font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>{vendor.name}</h1>
             <p className="text-sm mt-0.5" style={{ color: '#434655' }}>{vendor.company_name}</p>
           </div>
+          <button
+            data-testid="edit-vendor-btn"
+            onClick={() => navigate(`/vendors/${vendorId}/edit`)}
+            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[#F2F4F6]"
+            style={{ color: '#191C1E', boxShadow: '0 0 0 1px #C4C5D7' }}
+          >
+            Edit
+          </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

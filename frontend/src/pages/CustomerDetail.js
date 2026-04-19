@@ -47,6 +47,14 @@ export default function CustomerDetail() {
           </div>
           <div className="flex items-center gap-2">
             <button
+              data-testid="edit-customer-btn"
+              onClick={() => navigate(`/customers/${customerId}/edit`)}
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[#F2F4F6]"
+              style={{ color: '#191C1E', boxShadow: '0 0 0 1px #C4C5D7' }}
+            >
+              Edit
+            </button>
+            <button
               data-testid="customer-statement-btn"
               onClick={() => navigate(`/customers/${customerId}/statement`)}
               className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[#F2F4F6]"

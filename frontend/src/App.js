@@ -11,8 +11,10 @@ import CreateInvoice from './pages/CreateInvoice';
 import InvoiceDetail from './pages/InvoiceDetail';
 import CustomersList from './pages/CustomersList';
 import CustomerDetail from './pages/CustomerDetail';
+import EditCustomer from './pages/EditCustomer';
 import VendorsList from './pages/VendorsList';
 import VendorDetail from './pages/VendorDetail';
+import EditVendor from './pages/EditVendor';
 import ExpensesList from './pages/ExpensesList';
 import AddExpense from './pages/AddExpense';
 import EditExpense from './pages/EditExpense';
@@ -26,6 +28,8 @@ import ProfitLoss from './pages/ProfitLoss';
 import SalesReport from './pages/SalesReport';
 import ExpenseReport from './pages/ExpenseReport';
 import ProductsList from './pages/ProductsList';
+import ProductDetail from './pages/ProductDetail';
+import EditProduct from './pages/EditProduct';
 import InvoicePrint from './pages/InvoicePrint';
 import AIAssistant from './pages/AIAssistant';
 import Settings from './pages/Settings';
@@ -79,14 +83,26 @@ function AppRouter() {
       <Route path="/customers/:customerId" element={
         <ProtectedRoute><CustomerDetail /></ProtectedRoute>
       } />
+      <Route path="/customers/:customerId/edit" element={
+        <ProtectedRoute><EditCustomer /></ProtectedRoute>
+      } />
       <Route path="/vendors" element={
         <ProtectedRoute><VendorsList /></ProtectedRoute>
       } />
       <Route path="/vendors/:vendorId" element={
         <ProtectedRoute><VendorDetail /></ProtectedRoute>
       } />
+      <Route path="/vendors/:vendorId/edit" element={
+        <ProtectedRoute><EditVendor /></ProtectedRoute>
+      } />
       <Route path="/products" element={
         <ProtectedRoute><ProductsList /></ProtectedRoute>
+      } />
+      <Route path="/products/:productId" element={
+        <ProtectedRoute><ProductDetail /></ProtectedRoute>
+      } />
+      <Route path="/products/:productId/edit" element={
+        <ProtectedRoute><EditProduct /></ProtectedRoute>
       } />
       <Route path="/sales/:invoiceId/print" element={
         <ProtectedRoute><InvoicePrint /></ProtectedRoute>

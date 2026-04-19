@@ -141,7 +141,8 @@ export default function ProductsList() {
                   <tr><td colSpan={8} className="text-center py-12 text-sm" style={{ color: '#434655' }}>No products found</td></tr>
                 ) : filtered.map((p, i) => (
                   <tr key={p.product_id} data-testid={`product-row-${p.product_id}`}
-                    className="transition-colors hover:bg-[#F7F9FB]"
+                    onClick={() => navigate(`/products/${p.product_id}`)}
+                    className="cursor-pointer transition-colors hover:bg-[#F7F9FB]"
                     style={{ background: i % 2 === 0 ? '#FFFFFF' : '#FAFBFC', borderBottom: '1px solid #F2F4F6' }}>
                     <td className="px-4 py-3 font-medium" style={{ color: '#0F2D5C' }}>{p.sku}</td>
                     <td className="px-4 py-3">
