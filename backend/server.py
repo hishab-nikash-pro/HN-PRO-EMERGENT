@@ -347,6 +347,50 @@ async def logout(request: Request, response: Response):
     response.delete_cookie("session_token", path="/", secure=True, samesite="none")
     return {"ok": True}
 
+# ─── Role helpers ───
+
+ROLE_RANKS = {"Owner": 5, "Admin": 4, "Manager": 3, "Staff/Accountant": 2, "Viewer": 1}
+
+
+async def get_user_role_for_company(user_id: str, company_id: str) -> str:
+    """Resolve user's role for a specific company.
+    - If team_member record exists: use that role.
+    - Otherwise treat as Owner (the logged-in Google OAuth user IS the company owner by default).
+    """
+    if not company_id:
+        return "Owner"
+    member = await db.team_members.find_one({"user_id": user_id, "companies": company_id}, {"_id": 0, "role": 1})
+    if member and member.get("role"):
+        return member["role"]
+    # Fallback: if user was explicitly added as team member but without company scope, use role
+    member_any = await db.team_members.find_one({"user_id": user_id}, {"_id": 0, "role": 1})
+    if member_any and member_any.get("role"):
+        return member_any["role"]
+    return "Owner"
+
+
+async def require_role(user: dict, company_id: str, allowed: list):
+    role = await get_user_role_for_company(user["user_id"], company_id)
+    if role not in allowed:
+        raise HTTPException(status_code=403, detail=f"Insufficient permissions. Role '{role}' cannot perform this action. Required: {', '.join(allowed)}.")
+    return role
+
+
+def can_write(role: str) -> bool:
+    return role in ("Owner", "Admin", "Manager", "Staff/Accountant")
+
+
+def can_admin(role: str) -> bool:
+    return role in ("Owner", "Admin")
+
+
+@api_router.get("/auth/me-with-role")
+async def get_me_with_role(company_id: Optional[str] = None, user: dict = Depends(get_current_user)):
+    role = await get_user_role_for_company(user["user_id"], company_id or "")
+    return {"user": UserOut(**user).dict(), "role": role, "company_id": company_id}
+
+
+
 # ─── Companies Routes ───
 
 COMPANIES = [
@@ -1259,6 +1303,7 @@ async def convert_estimate_to_invoice(company_id: str, estimate_id: str, user: d
 
 @api_router.delete("/companies/{company_id}/estimates/{estimate_id}")
 async def delete_estimate(company_id: str, estimate_id: str, user: dict = Depends(get_current_user)):
+    await require_role(user, company_id, ["Owner", "Admin", "Manager"])
     await db.estimates.delete_one({"estimate_id": estimate_id})
     return {"ok": True}
 
@@ -1308,6 +1353,7 @@ async def pay_bill(company_id: str, bill_id: str, payment: PaymentRecord, user: 
 
 @api_router.delete("/companies/{company_id}/bills/{bill_id}")
 async def delete_bill(company_id: str, bill_id: str, user: dict = Depends(get_current_user)):
+    await require_role(user, company_id, ["Owner", "Admin", "Manager"])
     await db.bills.delete_one({"bill_id": bill_id})
     return {"ok": True}
 
@@ -1568,6 +1614,7 @@ async def update_product(company_id: str, product_id: str, data: ProductCreate, 
 
 @api_router.delete("/companies/{company_id}/products/{product_id}")
 async def delete_product(company_id: str, product_id: str, user: dict = Depends(get_current_user)):
+    await require_role(user, company_id, ["Owner", "Admin", "Manager"])
     result = await db.products.delete_one({"company_id": company_id, "product_id": product_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -1659,6 +1706,109 @@ async def send_low_stock_alert(company_id: str, user: dict = Depends(get_current
 
 # ─── AI Assistant Routes ───
 
+async def build_ai_business_context(company_id: str) -> str:
+    """Assemble a concise, live business snapshot for the AI Assistant system prompt."""
+    if not company_id:
+        return ""
+    try:
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        month_start = datetime.now(timezone.utc).strftime("%Y-%m-01")
+
+        # Counts
+        inv_count = await db.invoices.count_documents({"company_id": company_id})
+        cust_count = await db.customers.count_documents({"company_id": company_id})
+        vnd_count = await db.vendors.count_documents({"company_id": company_id})
+        prd_count = await db.inventory.count_documents({"company_id": company_id})
+
+        # Company meta
+        company = await db.companies.find_one({"company_id": company_id}, {"_id": 0, "name": 1, "currency": 1, "country": 1}) or {}
+        currency = company.get("currency", "USD")
+
+        # This month sales
+        month_invoices = await db.invoices.find(
+            {"company_id": company_id, "issue_date": {"$gte": month_start}, "status": {"$ne": "Cancelled"}},
+            {"_id": 0, "total": 1, "customer_name": 1, "balance_due": 1, "due_date": 1, "invoice_number": 1, "status": 1}
+        ).to_list(500)
+        mtd_sales = round(sum(i.get("total", 0) for i in month_invoices), 2)
+
+        # AR: overdue invoices
+        all_open = await db.invoices.find(
+            {"company_id": company_id, "balance_due": {"$gt": 0}, "status": {"$ne": "Cancelled"}},
+            {"_id": 0, "invoice_number": 1, "customer_name": 1, "balance_due": 1, "due_date": 1, "issue_date": 1, "total": 1}
+        ).to_list(500)
+        total_ar = round(sum(i.get("balance_due", 0) for i in all_open), 2)
+        overdue = [i for i in all_open if i.get("due_date") and i["due_date"] < today]
+        overdue.sort(key=lambda x: x.get("due_date", ""))
+        top_overdue = overdue[:5]
+
+        # AP: overdue bills
+        all_open_bills = await db.bills.find(
+            {"company_id": company_id, "balance_due": {"$gt": 0}},
+            {"_id": 0, "bill_number": 1, "vendor_name": 1, "balance_due": 1, "due_date": 1, "total": 1}
+        ).to_list(500)
+        total_ap = round(sum(b.get("balance_due", 0) for b in all_open_bills), 2)
+        overdue_bills = [b for b in all_open_bills if b.get("due_date") and b["due_date"] < today]
+        overdue_bills.sort(key=lambda x: x.get("due_date", ""))
+        top_overdue_bills = overdue_bills[:5]
+
+        # Low stock
+        low_stock = await db.inventory.find(
+            {"company_id": company_id, "$expr": {"$lte": ["$stock_on_hand", "$reorder_level"]}},
+            {"_id": 0, "product_name": 1, "stock_on_hand": 1, "reorder_level": 1, "unit": 1}
+        ).limit(8).to_list(8)
+
+        # This month expenses
+        month_exp = await db.expenses.find(
+            {"company_id": company_id, "expense_date": {"$gte": month_start}},
+            {"_id": 0, "amount": 1, "category": 1}
+        ).to_list(500)
+        mtd_expenses = round(sum(e.get("amount", 0) for e in month_exp), 2)
+
+        # Top customer balances
+        top_cust = await db.customers.find(
+            {"company_id": company_id, "open_balance": {"$gt": 0}},
+            {"_id": 0, "name": 1, "open_balance": 1}
+        ).sort("open_balance", -1).limit(5).to_list(5)
+
+        # Top vendor balances
+        top_vend = await db.vendors.find(
+            {"company_id": company_id, "payable_balance": {"$gt": 0}},
+            {"_id": 0, "name": 1, "payable_balance": 1}
+        ).sort("payable_balance", -1).limit(5).to_list(5)
+
+        def money(v):
+            return f"{currency} {float(v or 0):,.2f}"
+
+        lines = [f"LIVE BUSINESS SNAPSHOT — {company.get('name', company_id)} ({company_id})",
+                 f"Today: {today} | Currency: {currency} | Country: {company.get('country', 'US')}",
+                 f"Entities: {inv_count} invoices, {cust_count} customers, {vnd_count} vendors, {prd_count} products.",
+                 f"This month so far: Sales={money(mtd_sales)} | Expenses={money(mtd_expenses)} | Rough Profit={money(mtd_sales - mtd_expenses)}",
+                 f"Accounts Receivable: {money(total_ar)} open, {len(overdue)} overdue invoices.",
+                 f"Accounts Payable: {money(total_ap)} open, {len(overdue_bills)} overdue bills."]
+
+        if top_overdue:
+            lines.append("Top overdue invoices:")
+            for i in top_overdue:
+                lines.append(f"  - {i.get('invoice_number','')} {i.get('customer_name','')} due {i.get('due_date','')} — {money(i.get('balance_due', 0))}")
+        if top_overdue_bills:
+            lines.append("Top overdue bills:")
+            for b in top_overdue_bills:
+                lines.append(f"  - {b.get('bill_number','')} {b.get('vendor_name','')} due {b.get('due_date','')} — {money(b.get('balance_due', 0))}")
+        if low_stock:
+            lines.append("Low-stock items:")
+            for p in low_stock:
+                lines.append(f"  - {p.get('product_name','')}: {p.get('stock_on_hand', 0)} {p.get('unit','')} (reorder at {p.get('reorder_level', 0)})")
+        if top_cust:
+            lines.append("Top customer receivables: " + ", ".join(f"{c['name']} {money(c['open_balance'])}" for c in top_cust))
+        if top_vend:
+            lines.append("Top vendor payables: " + ", ".join(f"{v['name']} {money(v['payable_balance'])}" for v in top_vend))
+
+        return "\n".join(lines)
+    except Exception as ex:
+        logger.warning(f"AI context build failed: {ex}")
+        return ""
+
+
 @api_router.post("/ai/chat")
 async def ai_chat(request: Request, user: dict = Depends(get_current_user)):
     body = await request.json()
@@ -1667,30 +1817,25 @@ async def ai_chat(request: Request, user: dict = Depends(get_current_user)):
     company_id = body.get("company_id", "")
     if not message:
         raise HTTPException(status_code=400, detail="Message required")
-    # Get company context
-    context = ""
-    if company_id:
-        dashboard = await get_dashboard.__wrapped__(company_id, user) if hasattr(get_dashboard, '__wrapped__') else {}
-        try:
-            inv_count = await db.invoices.count_documents({"company_id": company_id})
-            cust_count = await db.customers.count_documents({"company_id": company_id})
-            vnd_count = await db.vendors.count_documents({"company_id": company_id})
-            context = f"Company context: {inv_count} invoices, {cust_count} customers, {vnd_count} vendors."
-        except Exception:
-            pass
-    system_msg = f"""You are Hishab Nikash Pro AI Assistant - a business copilot for CK Frozen Fish & Food Inc., a US-based wholesale frozen fish and food distribution company in Queens, NY.
-You help with accounting, sales analysis, inventory management, and operational insights.
+    context = await build_ai_business_context(company_id)
+    system_msg = f"""You are Hishab Nikash Pro AI — a business & accounting copilot for inventory-based wholesale/distribution companies (especially frozen fish, frozen food, grocery, trading).
+You are NOT a generic chatbot. You are embedded INSIDE the accounting app and you have live numbers from the user's books.
+
 {context}
-LANGUAGE RULES:
-- By default, respond in English.
-- If the user writes in Bangla (Bengali), respond in Bangla.
-- If the user asks you to respond in Bangla, switch to Bangla.
-- You are fluent in both English and Bangla.
 
-ACTION CAPABILITY: When the user asks you to create invoices, enter bills, record expenses, or perform other actions, describe what should be done and suggest the action clearly. You can help draft invoice details, expense entries, journal entries, and reports.
+HOW TO ANSWER:
+- Always ground answers in the snapshot above. Quote exact numbers, invoice numbers, customer/vendor names when relevant.
+- If asked about overdue customers or vendors, pull from the "Top overdue invoices" / "Top overdue bills" lists above.
+- If asked about stock, reference the "Low-stock items" list.
+- If asked about performance, use the "This month" numbers and AR/AP totals.
+- Be concise and actionable. Use short markdown sections + bullets. Show dollar amounts with currency.
+- If the user asks you to take an action (create invoice / enter bill / record expense / receive stock / view reports), describe it clearly and suggest they click the relevant quick-action button.
 
-Be concise, professional, and actionable. Use dollar amounts and specific numbers when possible.
-Format responses with clear sections using markdown."""
+LANGUAGE:
+- Default: English. If the user writes in Bangla (Bengali), respond in Bangla.
+- You are fluent in both.
+
+If the snapshot is empty (no company selected), ask the user to pick a company first before asking data questions."""
     try:
         chat = LlmChat(api_key=EMERGENT_LLM_KEY, session_id=session_id, system_message=system_msg)
         chat.with_model("openai", "gpt-5.2")
@@ -1782,6 +1927,7 @@ async def get_settings(company_id: str, user: dict = Depends(get_current_user)):
 
 @api_router.put("/settings/{company_id}")
 async def update_settings(company_id: str, request: Request, user: dict = Depends(get_current_user)):
+    await require_role(user, company_id, ["Owner", "Admin"])
     body = await request.json()
     body.pop("_id", None)
     body.pop("company_id", None)
@@ -1819,6 +1965,12 @@ async def approve_member(request_id: str, request: Request, user: dict = Depends
     body = await request.json()
     role = body.get("role", "Viewer")
     companies = body.get("companies", [])
+    # Only Owner/Admin of at least one target company may approve.
+    role_caller = await get_user_role_for_company(user["user_id"], companies[0] if companies else "")
+    if not can_admin(role_caller):
+        raise HTTPException(status_code=403, detail="Only Owner/Admin can approve team members.")
+    if role not in ROLE_RANKS:
+        raise HTTPException(status_code=400, detail=f"Invalid role '{role}'. Allowed: {list(ROLE_RANKS.keys())}")
     reg = await db.pending_registrations.find_one({"request_id": request_id}, {"_id": 0})
     if not reg:
         raise HTTPException(status_code=404, detail="Registration not found")
@@ -1845,7 +1997,15 @@ async def reject_member(request_id: str, user: dict = Depends(get_current_user))
 @api_router.put("/team-members/{member_id}/role")
 async def update_member_role(member_id: str, request: Request, user: dict = Depends(get_current_user)):
     body = await request.json()
-    await db.team_members.update_one({"member_id": member_id}, {"$set": {"role": body.get("role", "Viewer"), "companies": body.get("companies", [])}})
+    # Only Owner/Admin of any company the member belongs to can change roles.
+    companies = body.get("companies", [])
+    role_caller = await get_user_role_for_company(user["user_id"], companies[0] if companies else "")
+    if not can_admin(role_caller):
+        raise HTTPException(status_code=403, detail="Only Owner/Admin can change team member roles.")
+    new_role = body.get("role", "Viewer")
+    if new_role not in ROLE_RANKS:
+        raise HTTPException(status_code=400, detail=f"Invalid role '{new_role}'. Allowed: {list(ROLE_RANKS.keys())}")
+    await db.team_members.update_one({"member_id": member_id}, {"$set": {"role": new_role, "companies": companies}})
     updated = await db.team_members.find_one({"member_id": member_id}, {"_id": 0})
     return updated
 

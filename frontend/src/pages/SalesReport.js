@@ -5,6 +5,7 @@ import AppShell from '../components/layout/AppShell';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Export, Printer } from '@phosphor-icons/react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { downloadCSV, printReport } from '../lib/exportUtils';
 
 export default function SalesReport() {
   const { selectedCompany } = useCompany();
@@ -25,6 +26,20 @@ export default function SalesReport() {
 
   useEffect(() => { loadData(); }, [selectedCompany]);
 
+  const handleExport = () => {
+    if (!data) return;
+    const rows = [];
+    rows.push({ section: 'Summary', key: 'Total Sales', value: data.total_sales || 0 });
+    rows.push({ section: 'Summary', key: 'Total Collected', value: data.total_collected || 0 });
+    rows.push({ section: 'Summary', key: 'Invoice Count', value: data.invoice_count || 0 });
+    rows.push({ section: 'Summary', key: 'Average Invoice', value: data.average_invoice || 0 });
+    (data.monthly_data || []).forEach((m) => rows.push({ section: 'Monthly', key: m.month, value: m.sales }));
+    (data.top_customers || []).forEach((c) => rows.push({ section: 'Top Customer', key: c.customer_name, value: c.total }));
+    (data.top_products || []).forEach((p) => rows.push({ section: 'Top Product', key: p.product_name, value: p.revenue }));
+    const period = `${startDate || 'YTD'}_to_${endDate || 'today'}`;
+    downloadCSV(`SalesReport_${selectedCompany?.company_id || 'company'}_${period}.csv`, rows, ['section', 'key', 'value']);
+  };
+
   if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} /></div></AppShell>;
 
   const d = data || {};
@@ -41,8 +56,8 @@ export default function SalesReport() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><Export size={18} /></button>
-            <button className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><Printer size={18} /></button>
+            <button data-testid="sales-export-csv" onClick={handleExport} title="Export CSV" className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium hover:bg-white transition-colors" style={{ color: '#0F2D5C', boxShadow: '0 0 0 1px #CBD5E1' }}><Export size={14} /> CSV</button>
+            <button data-testid="sales-print" onClick={printReport} title="Print / Save PDF" className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium hover:bg-white transition-colors" style={{ color: '#0F2D5C', boxShadow: '0 0 0 1px #CBD5E1' }}><Printer size={14} /> Print</button>
           </div>
         </div>
 

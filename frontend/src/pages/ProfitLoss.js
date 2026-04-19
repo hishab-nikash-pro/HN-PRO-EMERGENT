@@ -5,6 +5,7 @@ import AppShell from '../components/layout/AppShell';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Export, Printer } from '@phosphor-icons/react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
+import { downloadCSV, printReport } from '../lib/exportUtils';
 
 export default function ProfitLoss() {
   const { selectedCompany } = useCompany();
@@ -25,6 +26,19 @@ export default function ProfitLoss() {
 
   useEffect(() => { loadData(); }, [selectedCompany]);
 
+  const handleExport = () => {
+    if (!data) return;
+    const rows = [
+      { section: 'Income', line: 'Sales Revenue', amount: data.total_income || 0 },
+      { section: 'COGS', line: 'Cost of Goods Sold', amount: -(data.cogs || 0) },
+      { section: 'Gross Profit', line: 'Gross Profit', amount: data.gross_profit || 0 },
+      ...(data.expense_categories || []).map((c) => ({ section: 'Operating Expenses', line: c.category, amount: -(c.amount || 0) })),
+      { section: 'Net Profit', line: 'Net Profit', amount: data.net_profit || 0 },
+    ];
+    const period = `${startDate || 'YTD'}_to_${endDate || 'today'}`;
+    downloadCSV(`ProfitLoss_${selectedCompany?.company_id || 'company'}_${period}.csv`, rows, ['section', 'line', 'amount']);
+  };
+
   if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} /></div></AppShell>;
 
   const d = data || {};
@@ -41,8 +55,8 @@ export default function ProfitLoss() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button className="p-2 rounded-lg hover:bg-white transition-colors" style={{ color: '#434655' }}><Export size={18} /></button>
-            <button className="p-2 rounded-lg hover:bg-white transition-colors" style={{ color: '#434655' }}><Printer size={18} /></button>
+            <button data-testid="pl-export-csv" onClick={handleExport} title="Export CSV" className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium hover:bg-white transition-colors" style={{ color: '#0F2D5C', boxShadow: '0 0 0 1px #CBD5E1' }}><Export size={14} /> CSV</button>
+            <button data-testid="pl-print" onClick={printReport} title="Print / Save PDF" className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium hover:bg-white transition-colors" style={{ color: '#0F2D5C', boxShadow: '0 0 0 1px #CBD5E1' }}><Printer size={14} /> Print</button>
           </div>
         </div>
 

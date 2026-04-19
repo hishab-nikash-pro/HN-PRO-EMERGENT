@@ -3,8 +3,9 @@ import { useCompany } from '../contexts/CompanyContext';
 import { getReceivables } from '../lib/api';
 import AppShell from '../components/layout/AppShell';
 import { useNavigate } from 'react-router-dom';
-import { CurrencyDollar, EnvelopeSimple, Printer, ArrowRight } from '@phosphor-icons/react';
+import { CurrencyDollar, EnvelopeSimple, Printer, ArrowRight, Export } from '@phosphor-icons/react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts';
+import { downloadCSV, printReport } from '../lib/exportUtils';
 
 export default function AccountsReceivable() {
   const { selectedCompany } = useCompany();
@@ -19,6 +20,18 @@ export default function AccountsReceivable() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [selectedCompany]);
+
+  const handleExport = () => {
+    if (!data) return;
+    const rows = [];
+    rows.push({ section: 'Summary', key: 'Total Receivable', value: data.total_receivable || 0 });
+    rows.push({ section: 'Summary', key: 'Overdue Count', value: data.overdue_count || 0 });
+    rows.push({ section: 'Summary', key: 'Overdue Amount', value: data.overdue_amount || 0 });
+    Object.entries(data.aging || {}).forEach(([bucket, amount]) => rows.push({ section: 'Aging', key: bucket, value: amount }));
+    (data.top_debtors || []).forEach((c) => rows.push({ section: 'Top Debtor', key: c.name || c.customer_name, value: c.balance || c.open_balance }));
+    (data.recent_payments || []).forEach((p) => rows.push({ section: 'Recent Payment', key: `${p.payment_date} ${p.customer_name}`, value: p.amount }));
+    downloadCSV(`AccountsReceivable_${selectedCompany?.company_id || 'company'}_${new Date().toISOString().slice(0,10)}.csv`, rows, ['section', 'key', 'value']);
+  };
 
   if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} /></div></AppShell>;
 
@@ -40,8 +53,12 @@ export default function AccountsReceivable() {
             <p className="text-sm mt-1" style={{ color: '#434655' }}>Track customer balances and collections</p>
           </div>
           <div className="flex items-center gap-2">
-            <button className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[#F2F4F6]"
-              style={{ color: '#191C1E', boxShadow: '0 0 0 1px #C4C5D7' }}>
+            <button data-testid="ar-export-csv" onClick={handleExport} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[#F2F4F6]"
+              style={{ color: '#0F2D5C', boxShadow: '0 0 0 1px #CBD5E1' }}>
+              <Export size={16} /> Export CSV
+            </button>
+            <button data-testid="ar-print" onClick={printReport} className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[#F2F4F6]"
+              style={{ color: '#0F172A', boxShadow: '0 0 0 1px #CBD5E1' }}>
               <Printer size={16} /> Print Statement
             </button>
           </div>

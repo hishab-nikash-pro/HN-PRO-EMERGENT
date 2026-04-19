@@ -36,6 +36,25 @@ export default function BalanceSheet() {
 
   useEffect(() => { loadData(); }, [selectedCompany]);
 
+  const handleExport = () => {
+    if (!data) return;
+    const a = data.assets || {}; const ca = a.current_assets || {};
+    const l = data.liabilities || {}; const cl = l.current_liabilities || {};
+    const eq = data.equity || {};
+    const rows = [
+      { section: 'Current Assets', line: 'Cash & Equivalents', amount: ca.cash_and_equivalents || 0 },
+      { section: 'Current Assets', line: 'Accounts Receivable', amount: ca.accounts_receivable || 0 },
+      { section: 'Current Assets', line: 'Inventory', amount: ca.inventory || 0 },
+      { section: 'Current Assets', line: 'Total Current Assets', amount: ca.total_current_assets || 0 },
+      { section: 'Assets', line: 'TOTAL ASSETS', amount: a.total_assets || 0 },
+      { section: 'Current Liabilities', line: 'Accounts Payable', amount: cl.accounts_payable || 0 },
+      { section: 'Current Liabilities', line: 'Total Current Liabilities', amount: cl.total_current_liabilities || 0 },
+      { section: 'Liabilities', line: 'TOTAL LIABILITIES', amount: l.total_liabilities || 0 },
+      { section: 'Equity', line: 'TOTAL EQUITY', amount: eq.total_equity || 0 },
+    ];
+    downloadCSV(`BalanceSheet_${selectedCompany?.company_id || 'company'}_${data.as_of_date || 'latest'}.csv`, rows, ['section', 'line', 'amount']);
+  };
+
   if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} /></div></AppShell>;
 
   const d = data || {};

@@ -13,7 +13,7 @@ const COMPANIES = [
 
 export default function Header({ onMenuToggle }) {
   const { user } = useAuth();
-  const { selectedCompany, selectCompany } = useCompany();
+  const { selectedCompany, selectCompany, role } = useCompany();
   const navigate = useNavigate();
   const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -118,7 +118,7 @@ export default function Header({ onMenuToggle }) {
           <Question size={20} />
         </button>
 
-        {/* User avatar */}
+        {/* User avatar + role badge */}
         <div data-testid="header-user-profile" className="flex items-center gap-2 pl-2 ml-1" style={{ borderLeft: '1px solid #E6E8EA' }}>
           {user?.picture ? (
             <img src={user.picture} alt="" className="w-8 h-8 rounded-full object-cover" />
@@ -127,9 +127,16 @@ export default function Header({ onMenuToggle }) {
               {user?.name?.charAt(0) || 'U'}
             </div>
           )}
-          <span className="hidden lg:inline text-sm font-medium truncate max-w-[120px]" style={{ color: '#191C1E' }}>
-            {user?.name || 'User'}
-          </span>
+          <div className="hidden lg:flex flex-col leading-tight">
+            <span className="text-sm font-medium truncate max-w-[120px]" style={{ color: '#0F172A' }}>
+              {user?.name || 'User'}
+            </span>
+            {role && (
+              <span data-testid="header-role-badge" className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: '#0E7490' }}>
+                {role}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </header>

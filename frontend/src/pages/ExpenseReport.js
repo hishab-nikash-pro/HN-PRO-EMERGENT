@@ -5,6 +5,7 @@ import AppShell from '../components/layout/AppShell';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Export, Printer } from '@phosphor-icons/react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell } from 'recharts';
+import { downloadCSV, printReport } from '../lib/exportUtils';
 
 const COLORS = ['#0F2D5C', '#0E7490', '#0E7490', '#7F2500', '#BA1A1A', '#16a34a', '#434655', '#92400e'];
 
@@ -27,6 +28,19 @@ export default function ExpenseReport() {
 
   useEffect(() => { loadData(); }, [selectedCompany]);
 
+  const handleExport = () => {
+    if (!data) return;
+    const rows = [];
+    rows.push({ section: 'Summary', key: 'Total Expenses', value: data.total_expenses || 0 });
+    rows.push({ section: 'Summary', key: 'Expense Count', value: data.expense_count || 0 });
+    rows.push({ section: 'Summary', key: 'Average', value: data.average_expense || 0 });
+    (data.by_category || []).forEach((c) => rows.push({ section: 'Category', key: c.category, value: c.total }));
+    (data.monthly_data || []).forEach((m) => rows.push({ section: 'Monthly', key: m.month, value: m.expenses }));
+    (data.top_vendors || []).forEach((v) => rows.push({ section: 'Top Vendor', key: v.vendor_name, value: v.total }));
+    const period = `${startDate || 'YTD'}_to_${endDate || 'today'}`;
+    downloadCSV(`ExpenseReport_${selectedCompany?.company_id || 'company'}_${period}.csv`, rows, ['section', 'key', 'value']);
+  };
+
   if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} /></div></AppShell>;
 
   const d = data || {};
@@ -43,8 +57,8 @@ export default function ExpenseReport() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><Export size={18} /></button>
-            <button className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><Printer size={18} /></button>
+            <button data-testid="exp-export-csv" onClick={handleExport} title="Export CSV" className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium hover:bg-white transition-colors" style={{ color: '#0F2D5C', boxShadow: '0 0 0 1px #CBD5E1' }}><Export size={14} /> CSV</button>
+            <button data-testid="exp-print" onClick={printReport} title="Print / Save PDF" className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium hover:bg-white transition-colors" style={{ color: '#0F2D5C', boxShadow: '0 0 0 1px #CBD5E1' }}><Printer size={14} /> Print</button>
           </div>
         </div>
 

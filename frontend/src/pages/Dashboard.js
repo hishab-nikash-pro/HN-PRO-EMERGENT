@@ -104,8 +104,8 @@ export default function Dashboard() {
           {/* Sales Trend */}
           <div className="lg:col-span-2 rounded-2xl p-6" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
             <h3 className="text-sm font-semibold mb-4" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Sales Trend</h3>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="h-64" style={{ minHeight: 240 }}>
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={200}>
                 <BarChart data={d.sales_trend || []}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E6E8EA" vertical={false} />
                   <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#434655' }} axisLine={false} tickLine={false} />
