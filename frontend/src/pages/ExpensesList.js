@@ -111,7 +111,8 @@ export default function ExpensesList() {
                   <tr><td colSpan={8} className="text-center py-12 text-sm" style={{ color: '#434655' }}>No expenses found</td></tr>
                 ) : filtered.map((e, i) => (
                   <tr key={e.expense_id} data-testid={`expense-row-${e.expense_id}`}
-                    className="transition-colors hover:bg-[#F7F9FB]"
+                    onClick={() => navigate(`/expenses/${e.expense_id}`)}
+                    className="cursor-pointer transition-colors hover:bg-[#F7F9FB]"
                     style={{ background: i % 2 === 0 ? '#FFFFFF' : '#FAFBFC', borderBottom: '1px solid #F2F4F6' }}>
                     <td className="px-4 py-3" style={{ color: '#191C1E' }}>{e.expense_date}</td>
                     <td className="px-4 py-3 font-medium" style={{ color: '#191C1E' }}>{e.vendor_name || '—'}</td>

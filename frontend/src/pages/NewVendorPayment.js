@@ -157,60 +157,80 @@ export default function NewVendorPayment() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr style={{ background: '#F7F9FB', borderBottom: '1px solid #CBD5E1' }}>
-                        <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>Bill</th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>Bill #</th>
                         <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>Date</th>
-                        <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>Due</th>
-                        <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>Total</th>
-                        <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>Balance</th>
-                        <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>Pay</th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>Due Date</th>
+                        <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>Original Amount</th>
+                        <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>Paid</th>
+                        <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>Balance Due</th>
+                        <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>Amount to Pay</th>
                         <th className="px-4 py-3"></th>
                       </tr>
                     </thead>
                     <tbody>
-                      {bills.map((b, i) => (
+                      {bills.map((b, i) => {
+                        const amountPaid = (b.total || 0) - (b.balance_due || 0);
+                        return (
                         <tr key={b.bill_id} style={{ background: i % 2 === 0 ? '#FFFFFF' : '#FAFBFC', borderBottom: '1px solid #F2F4F6' }}>
                           <td className="px-4 py-3 font-medium" style={{ color: '#0E7490' }}>{b.bill_number || b.reference_number || b.bill_id?.slice(-6)}</td>
                           <td className="px-4 py-3" style={{ color: '#475569' }}>{b.bill_date || b.issue_date || '—'}</td>
                           <td className="px-4 py-3" style={{ color: '#475569' }}>{b.due_date || '—'}</td>
                           <td className="px-4 py-3 text-right tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#0F172A' }}>{money(b.total)}</td>
+                          <td className="px-4 py-3 text-right tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#059669' }}>{money(amountPaid)}</td>
                           <td className="px-4 py-3 text-right tabular-nums font-semibold" style={{ fontFamily: 'Manrope, sans-serif', color: '#B91C1C' }}>{money(b.balance_due)}</td>
                           <td className="px-4 py-3 text-right">
                             <input data-testid={`vpay-amount-${b.bill_id}`} type="number" step="0.01" min="0" max={b.balance_due}
                               value={amountsByBill[b.bill_id] || ''}
                               onChange={(e) => handleAmount(b.bill_id, e.target.value, b.balance_due)}
                               className="w-28 px-2 py-1 text-sm text-right rounded border focus:outline-none focus:ring-1"
-                              style={{ borderColor: '#CBD5E1', color: '#0F172A' }} />
+                              style={{ borderColor: '#CBD5E1', color: '#0F172A' }}
+                              placeholder="0.00" />
                           </td>
                           <td className="px-3 py-3 text-right">
-                            <button onClick={() => applyFull(b)} className="text-xs font-medium px-2 py-1 rounded" style={{ background: '#F2F4F6', color: '#0F2D5C' }}>Full</button>
+                            <button onClick={() => applyFull(b)} className="text-xs font-medium px-2 py-1 rounded hover:bg-gray-100" style={{ background: '#F2F4F6', color: '#0F2D5C' }}>Full</button>
                           </td>
                         </tr>
-                      ))}
+                      )})}
                     </tbody>
                   </table>
                 </div>
                 <div className="md:hidden divide-y" style={{ borderColor: '#F2F4F6' }}>
-                  {bills.map(b => (
+                  {bills.map(b => {
+                    const amountPaid = (b.total || 0) - (b.balance_due || 0);
+                    return (
                     <div key={b.bill_id} className="p-4 space-y-2">
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm font-semibold" style={{ color: '#0E7490' }}>{b.bill_number || b.reference_number || b.bill_id?.slice(-6)}</p>
-                          <p className="text-xs" style={{ color: '#475569' }}>Due {b.due_date || b.bill_date || '—'}</p>
+                          <p className="text-xs" style={{ color: '#475569' }}>Date: {b.bill_date || b.issue_date || '—'} • Due: {b.due_date || '—'}</p>
                         </div>
-                        <p className="text-sm font-bold tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#B91C1C' }}>{money(b.balance_due)}</p>
+                        <div className="text-right">
+                          <p className="text-sm font-bold tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#B91C1C' }}>{money(b.balance_due)}</p>
+                          <p className="text-xs" style={{ color: '#475569' }}>Balance Due</p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <span style={{ color: '#475569' }}>Original: </span>
+                          <span className="font-medium" style={{ color: '#0F172A' }}>{money(b.total)}</span>
+                        </div>
+                        <div className="text-right">
+                          <span style={{ color: '#475569' }}>Paid: </span>
+                          <span className="font-medium" style={{ color: '#059669' }}>{money(amountPaid)}</span>
+                        </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <input data-testid={`vpay-amount-m-${b.bill_id}`} type="number" step="0.01" min="0" max={b.balance_due}
                           value={amountsByBill[b.bill_id] || ''}
                           onChange={(e) => handleAmount(b.bill_id, e.target.value, b.balance_due)}
-                          placeholder="Pay amount"
+                          placeholder="Amount to pay"
                           className="flex-1 px-3 py-2 text-sm rounded-lg border focus:outline-none focus:ring-1"
                           style={{ borderColor: '#CBD5E1', color: '#0F172A' }} />
                         <button onClick={() => applyFull(b)} className="px-3 py-2 text-xs font-medium rounded-lg" style={{ background: '#F2F4F6', color: '#0F2D5C' }}>Full</button>
                         <button onClick={() => clearBill(b.bill_id)} className="px-3 py-2 text-xs font-medium rounded-lg" style={{ background: '#FEF2F2', color: '#B91C1C' }}>Clear</button>
                       </div>
                     </div>
-                  ))}
+                  )})}
                 </div>
               </>
             )}

@@ -15,6 +15,7 @@ import VendorsList from './pages/VendorsList';
 import VendorDetail from './pages/VendorDetail';
 import ExpensesList from './pages/ExpensesList';
 import AddExpense from './pages/AddExpense';
+import EditExpense from './pages/EditExpense';
 import InventoryList from './pages/InventoryList';
 import InventoryDetail from './pages/InventoryDetail';
 import InventoryValuation from './pages/InventoryValuation';
@@ -95,6 +96,9 @@ function AppRouter() {
       } />
       <Route path="/expenses/new" element={
         <ProtectedRoute><AddExpense /></ProtectedRoute>
+      } />
+      <Route path="/expenses/:expenseId" element={
+        <ProtectedRoute><EditExpense /></ProtectedRoute>
       } />
       <Route path="/inventory" element={
         <ProtectedRoute><InventoryList /></ProtectedRoute>

@@ -706,6 +706,25 @@ async def get_expense(company_id: str, expense_id: str, user: dict = Depends(get
         raise HTTPException(status_code=404, detail="Expense not found")
     return e
 
+@api_router.put("/companies/{company_id}/expenses/{expense_id}")
+async def update_expense(company_id: str, expense_id: str, data: ExpenseCreate, user: dict = Depends(get_current_user)):
+    await require_role(user, company_id, ["Owner", "Admin", "Manager", "Staff/Accountant"])
+    existing = await db.expenses.find_one({"company_id": company_id, "expense_id": expense_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Expense not found")
+    
+    update_data = data.model_dump(exclude_unset=True)
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    update_data["updated_by"] = user["user_id"]
+    
+    await db.expenses.update_one(
+        {"company_id": company_id, "expense_id": expense_id},
+        {"$set": update_data}
+    )
+    
+    updated = await db.expenses.find_one({"company_id": company_id, "expense_id": expense_id}, {"_id": 0})
+    return updated
+
 # ─── Inventory Routes ───
 
 @api_router.get("/companies/{company_id}/inventory")
