@@ -194,7 +194,7 @@ class ProductCreate(BaseModel):
     description: Optional[str] = ""
     category: Optional[str] = ""
     unit: str = "pcs"
-    units_per_case: int = 1  # How many units in one case (e.g., 1 case = 12 units)
+    units_per_case: Optional[int] = None  # How many units in one case (e.g., 1 case = 12 units) - None means use case_quantity fallback
     cost_price: float = 0
     selling_price: float = 0
     case_price: Optional[float] = 0
@@ -1626,8 +1626,8 @@ async def get_products(company_id: str, category: Optional[str] = None, user: di
 async def create_product(company_id: str, data: ProductCreate, user: dict = Depends(get_current_user)):
     await require_role(user, company_id, ["Owner", "Admin", "Manager", "Staff/Accountant"])
     
-    # Handle backward compatibility: if case_quantity provided but not units_per_case, use case_quantity
-    units_per_case = data.units_per_case if data.units_per_case > 0 else (data.case_quantity or 1)
+    # Handle backward compatibility: if units_per_case not provided, use case_quantity fallback
+    units_per_case = data.units_per_case if data.units_per_case is not None and data.units_per_case > 0 else (data.case_quantity or 1)
     
     product = {
         "product_id": f"prod_{uuid.uuid4().hex[:10]}",
@@ -1654,7 +1654,7 @@ async def get_product(company_id: str, product_id: str, user: dict = Depends(get
 @api_router.put("/companies/{company_id}/products/{product_id}")
 async def update_product(company_id: str, product_id: str, data: ProductCreate, user: dict = Depends(get_current_user)):
     # Handle backward compatibility
-    units_per_case = data.units_per_case if data.units_per_case > 0 else (data.case_quantity or 1)
+    units_per_case = data.units_per_case if data.units_per_case is not None and data.units_per_case > 0 else (data.case_quantity or 1)
     
     update_data = data.model_dump(exclude={"case_quantity", "stock_on_hand"})
     update_data["units_per_case"] = units_per_case

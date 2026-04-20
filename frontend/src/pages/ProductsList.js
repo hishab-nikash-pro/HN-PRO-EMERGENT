@@ -13,7 +13,7 @@ export default function ProductsList() {
   const [categoryFilter, setCategoryFilter] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editProduct, setEditProduct] = useState(null);
-  const [form, setForm] = useState({ name: '', description: '', category: 'Frozen Fish', unit: 'kg', cost_price: 0, selling_price: 0, case_price: 0, case_quantity: 1, weight_info: '', sku: '' });
+  const [form, setForm] = useState({ name: '', description: '', category: 'Frozen Fish', unit: 'kg', cost_price: 0, selling_price: 0, case_price: 0, units_per_case: 1, cases_on_hand: 0, available_cases: 0, weight_info: '', sku: '' });
   const navigate = useNavigate();
 
   const loadProducts = () => {
@@ -53,7 +53,7 @@ export default function ProductsList() {
 
   const handleEdit = (p) => {
     setEditProduct(p);
-    setForm({ name: p.name, description: p.description || '', category: p.category || '', unit: p.unit || 'kg', cost_price: p.cost_price || 0, selling_price: p.selling_price || 0, case_price: p.case_price || 0, case_quantity: p.case_quantity || 1, weight_info: p.weight_info || '', sku: p.sku || '' });
+    setForm({ name: p.name, description: p.description || '', category: p.category || '', unit: p.unit || 'kg', cost_price: p.cost_price || 0, selling_price: p.selling_price || 0, case_price: p.case_price || 0, units_per_case: p.units_per_case || p.case_quantity || 1, cases_on_hand: p.cases_on_hand || 0, available_cases: p.available_cases || 0, weight_info: p.weight_info || '', sku: p.sku || '' });
     setShowCreateModal(true);
   };
 
@@ -75,7 +75,7 @@ export default function ProductsList() {
             <h1 className="text-2xl font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Products</h1>
             <p className="text-sm mt-1" style={{ color: '#434655' }}>Product catalog with pricing and case information</p>
           </div>
-          <button data-testid="add-product-btn" onClick={() => { setEditProduct(null); setForm({ name: '', description: '', category: 'Frozen Fish', unit: 'kg', cost_price: 0, selling_price: 0, case_price: 0, case_quantity: 1, weight_info: '', sku: '' }); setShowCreateModal(true); }}
+          <button data-testid="add-product-btn" onClick={() => { setEditProduct(null); setForm({ name: '', description: '', category: 'Frozen Fish', unit: 'kg', cost_price: 0, selling_price: 0, case_price: 0, units_per_case: 1, cases_on_hand: 0, available_cases: 0, weight_info: '', sku: '' }); setShowCreateModal(true); }}
             className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90"
             style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
             <Plus size={16} weight="bold" /> Add Product
@@ -226,9 +226,24 @@ export default function ProductsList() {
                     style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }} />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium mb-1.5" style={{ color: '#434655' }}>Case Quantity</label>
-                  <input type="number" value={form.case_quantity}
-                    onChange={(e) => setForm({ ...form, case_quantity: parseInt(e.target.value) || 1 })}
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: '#434655' }}>Units per Case</label>
+                  <input type="number" min="1" value={form.units_per_case}
+                    onChange={(e) => setForm({ ...form, units_per_case: parseInt(e.target.value) || 1 })}
+                    placeholder="e.g., 12"
+                    className="w-full px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:ring-1"
+                    style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }} />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: '#434655' }}>Cases on Hand</label>
+                  <input type="number" step="0.01" min="0" value={form.cases_on_hand}
+                    onChange={(e) => setForm({ ...form, cases_on_hand: parseFloat(e.target.value) || 0 })}
+                    className="w-full px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:ring-1"
+                    style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }} />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: '#434655' }}>Available Cases</label>
+                  <input type="number" step="0.01" min="0" value={form.available_cases}
+                    onChange={(e) => setForm({ ...form, available_cases: parseFloat(e.target.value) || 0 })}
                     className="w-full px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:ring-1"
                     style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }} />
                 </div>
