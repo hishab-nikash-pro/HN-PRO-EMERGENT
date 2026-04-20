@@ -294,6 +294,25 @@ async def get_current_user(request: Request) -> dict:
         raise HTTPException(status_code=401, detail="User not found")
     return user
 
+
+# ─── AI Import Models ───
+
+class AIUploadCreate(BaseModel):
+    file_name: str
+    file_type: str  # mime type
+    file_size: int
+    file_base64: str  # base64 encoded file content
+
+class AIExtractedData(BaseModel):
+    detected_type: str  # "invoice", "bill", "expense", "stock_receipt", "quickbooks", "unknown"
+    confidence: float  # 0.0 to 1.0
+    extracted_fields: dict
+    suggestions: Optional[List[str]] = []
+
+class AIUploadConfirm(BaseModel):
+    destination: str  # "invoice", "bill", "expense", "stock_receipt"
+    data: dict  # The confirmed/edited data to save
+
 # ─── Auth Routes ───
 
 @api_router.post("/auth/session")
@@ -2417,6 +2436,331 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+
+# ─── AI Import Center Routes ───
+
+@api_router.post("/companies/{company_id}/ai-uploads", status_code=201)
+async def create_ai_upload(company_id: str, data: AIUploadCreate, user: dict = Depends(get_current_user)):
+    """Upload a file for AI processing"""
+    upload = {
+        "upload_id": f"upload_{uuid.uuid4().hex[:12]}",
+        "company_id": company_id,
+        "user_id": user["user_id"],
+        "file_name": data.file_name,
+        "file_type": data.file_type,
+        "file_size": data.file_size,
+        "file_base64": data.file_base64,
+        "status": "pending",  # pending, processing, ready, error, confirmed
+        "detected_type": None,
+        "confidence": 0.0,
+        "extracted_data": {},
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.ai_uploads.insert_one(upload)
+    upload.pop("_id", None)
+    return upload
+
+@api_router.get("/companies/{company_id}/ai-uploads")
+async def list_ai_uploads(company_id: str, user: dict = Depends(get_current_user)):
+    """List all AI uploads for a company"""
+    uploads = await db.ai_uploads.find(
+        {"company_id": company_id},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(50).to_list(50)
+    return {"data": uploads}
+
+@api_router.post("/companies/{company_id}/ai-uploads/{upload_id}/process")
+async def process_ai_upload(company_id: str, upload_id: str, user: dict = Depends(get_current_user)):
+    """Process uploaded file with AI to extract data"""
+    upload = await db.ai_uploads.find_one({"upload_id": upload_id, "company_id": company_id}, {"_id": 0})
+    if not upload:
+        raise HTTPException(status_code=404, detail="Upload not found")
+    
+    # Update status to processing
+    await db.ai_uploads.update_one(
+        {"upload_id": upload_id},
+        {"$set": {"status": "processing"}}
+    )
+    
+    try:
+        # Initialize AI chat with vision capability
+        chat = LlmChat(
+            api_key=os.environ.get("EMERGENT_LLM_KEY"),
+            session_id=f"ai_upload_{upload_id}",
+            system_message="You are a document extraction assistant. Extract structured data from financial documents (invoices, bills, receipts, stock receipts). Always respond in valid JSON format."
+        ).with_model("openai", "gpt-4o")
+        
+        # Create image content from base64
+        image_content = ImageContent(image_base64=upload["file_base64"])
+        
+        # Extraction prompt
+        prompt = """Analyze this document and extract the following information in JSON format:
+
+{
+  "detected_type": "invoice|bill|expense|stock_receipt|unknown",
+  "confidence": 0.0-1.0,
+  "extracted_fields": {
+    // For invoice: customer_name, invoice_number, invoice_date, items[{description, quantity, price}], total
+    // For bill: vendor_name, bill_number, bill_date, items[{description, quantity, cost}], total
+    // For expense: vendor_name, date, amount, category, reference, memo
+    // For stock_receipt: vendor_name, date, products[{name, cases, unit_cost}], total
+  },
+  "suggestions": ["any clarifying questions if unsure"]
+}
+
+Important:
+- detected_type should be your best guess
+- confidence: 1.0 if very clear, 0.5 if somewhat unclear, 0.3 if very unclear
+- If confidence < 0.7, add suggestions with questions
+- Extract all visible text fields"""
+        
+        # Send message with image
+        user_message = UserMessage(
+            text=prompt,
+            file_contents=[image_content]
+        )
+        
+        response = await chat.send_message(user_message)
+        
+        # Parse AI response
+        extracted = json.loads(response)
+        
+        # Update upload with extracted data
+        await db.ai_uploads.update_one(
+            {"upload_id": upload_id},
+            {"$set": {
+                "status": "ready",
+                "detected_type": extracted.get("detected_type", "unknown"),
+                "confidence": extracted.get("confidence", 0.5),
+                "extracted_data": extracted.get("extracted_fields", {}),
+                "suggestions": extracted.get("suggestions", []),
+                "processed_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        return {"status": "success", "data": extracted}
+        
+    except Exception as e:
+        logger.error(f"AI processing error: {e}")
+        await db.ai_uploads.update_one(
+            {"upload_id": upload_id},
+            {"$set": {"status": "error", "error": str(e)}}
+        )
+        raise HTTPException(status_code=500, detail=f"AI processing failed: {str(e)}")
+
+@api_router.post("/companies/{company_id}/ai-uploads/{upload_id}/confirm")
+async def confirm_ai_upload(company_id: str, upload_id: str, data: AIUploadConfirm, user: dict = Depends(get_current_user)):
+    """Confirm and create record from AI upload"""
+    upload = await db.ai_uploads.find_one({"upload_id": upload_id, "company_id": company_id}, {"_id": 0})
+    if not upload:
+        raise HTTPException(status_code=404, detail="Upload not found")
+    
+    destination = data.destination
+    confirmed_data = data.data
+    
+    result = None
+    
+    try:
+        if destination == "invoice":
+            # Create invoice from confirmed data
+            invoice = {
+                "invoice_id": f"inv_{uuid.uuid4().hex[:10]}",
+                "company_id": company_id,
+                "customer_id": confirmed_data.get("customer_id", ""),
+                "customer_name": confirmed_data.get("customer_name", ""),
+                "invoice_number": confirmed_data.get("invoice_number", ""),
+                "invoice_date": confirmed_data.get("invoice_date", datetime.now(timezone.utc).isoformat().split('T')[0]),
+                "due_date": confirmed_data.get("due_date", ""),
+                "items": confirmed_data.get("items", []),
+                "subtotal": confirmed_data.get("subtotal", 0),
+                "tax": confirmed_data.get("tax", 0),
+                "total": confirmed_data.get("total", 0),
+                "balance_due": confirmed_data.get("total", 0),
+                "status": confirmed_data.get("status", "Draft"),
+                "notes": f"Created from AI import (upload_id: {upload_id})",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "created_by": user["user_id"]
+            }
+            await db.invoices.insert_one(invoice)
+            result = invoice
+            
+        elif destination == "bill":
+            # Create bill from confirmed data
+            bill = {
+                "bill_id": f"bill_{uuid.uuid4().hex[:10]}",
+                "company_id": company_id,
+                "vendor_id": confirmed_data.get("vendor_id", ""),
+                "vendor_name": confirmed_data.get("vendor_name", ""),
+                "bill_number": confirmed_data.get("bill_number", ""),
+                "bill_date": confirmed_data.get("bill_date", datetime.now(timezone.utc).isoformat().split('T')[0]),
+                "due_date": confirmed_data.get("due_date", ""),
+                "items": confirmed_data.get("items", []),
+                "total": confirmed_data.get("total", 0),
+                "balance_due": confirmed_data.get("total", 0),
+                "status": "Open",
+                "notes": f"Created from AI import (upload_id: {upload_id})",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "created_by": user["user_id"]
+            }
+            await db.bills.insert_one(bill)
+            result = bill
+            
+        elif destination == "expense":
+            # Create expense from confirmed data
+            expense = {
+                "expense_id": f"exp_{uuid.uuid4().hex[:10]}",
+                "company_id": company_id,
+                "vendor_id": confirmed_data.get("vendor_id", ""),
+                "vendor_name": confirmed_data.get("vendor_name", ""),
+                "category": confirmed_data.get("category", "Other"),
+                "expense_date": confirmed_data.get("date", datetime.now(timezone.utc).isoformat().split('T')[0]),
+                "amount": confirmed_data.get("amount", 0),
+                "payment_method": confirmed_data.get("payment_method", "Cash"),
+                "payment_account": confirmed_data.get("payment_account", "Operating Account"),
+                "reference_number": confirmed_data.get("reference", ""),
+                "memo": confirmed_data.get("memo", f"Created from AI import (upload_id: {upload_id})"),
+                "status": "Recorded",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "created_by": user["user_id"]
+            }
+            await db.expenses.insert_one(expense)
+            result = expense
+            
+        elif destination == "stock_receipt":
+            # Create stock receipt from confirmed data
+            receipt = {
+                "receipt_id": f"rcpt_{uuid.uuid4().hex[:10]}",
+                "company_id": company_id,
+                "vendor_id": confirmed_data.get("vendor_id", ""),
+                "vendor_name": confirmed_data.get("vendor_name", ""),
+                "receive_date": confirmed_data.get("date", datetime.now(timezone.utc).isoformat().split('T')[0]),
+                "reference": confirmed_data.get("reference", f"AI-{upload_id[:8]}"),
+                "items": confirmed_data.get("items", []),
+                "notes": f"Created from AI import (upload_id: {upload_id})",
+                "status": "Received",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "created_by": user["user_id"]
+            }
+            await db.stock_receipts.insert_one(receipt)
+            
+            # Update inventory for each item
+            for item in confirmed_data.get("items", []):
+                if item.get("item_id"):
+                    cases_qty = item.get("quantity", 0)
+                    await db.inventory.update_one(
+                        {"item_id": item["item_id"]},
+                        {"$inc": {"stock_on_hand": cases_qty, "available_stock": cases_qty}}
+                    )
+                    # Update product cases_on_hand if product_id exists
+                    inv_item = await db.inventory.find_one({"item_id": item["item_id"]}, {"_id": 0, "product_id": 1})
+                    if inv_item and inv_item.get("product_id"):
+                        await db.products.update_one(
+                            {"product_id": inv_item["product_id"]},
+                            {"$inc": {"cases_on_hand": cases_qty, "available_cases": cases_qty}}
+                        )
+            result = receipt
+        
+        # Mark upload as confirmed
+        await db.ai_uploads.update_one(
+            {"upload_id": upload_id},
+            {"$set": {
+                "status": "confirmed",
+                "destination": destination,
+                "confirmed_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        result.pop("_id", None)
+        return {"status": "success", "destination": destination, "data": result}
+        
+    except Exception as e:
+        logger.error(f"Confirm upload error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to create {destination}: {str(e)}")
+
+@api_router.delete("/companies/{company_id}/ai-uploads/{upload_id}")
+async def delete_ai_upload(company_id: str, upload_id: str, user: dict = Depends(get_current_user)):
+    """Delete an AI upload"""
+    result = await db.ai_uploads.delete_one({"upload_id": upload_id, "company_id": company_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Upload not found")
+    return {"status": "deleted"}
+
+@api_router.get("/companies/{company_id}/workflow-alerts")
+async def get_workflow_alerts(company_id: str, user: dict = Depends(get_current_user)):
+    """Get workflow alerts for common issues"""
+    alerts = []
+    
+    # Check for negative stock
+    products = await db.products.find({"company_id": company_id, "cases_on_hand": {"$lt": 0}}, {"_id": 0, "name": 1, "cases_on_hand": 1}).to_list(10)
+    for p in products:
+        alerts.append({
+            "type": "negative_stock",
+            "severity": "high",
+            "message": f"Product '{p.get('name')}' has negative stock: {p.get('cases_on_hand')} cases",
+            "data": p
+        })
+    
+    # Check for invoices without payment (overdue)
+    today = datetime.now(timezone.utc).isoformat().split('T')[0]
+    overdue_invoices = await db.invoices.find({
+        "company_id": company_id,
+        "status": {"$in": ["Sent", "Partial Paid"]},
+        "due_date": {"$lt": today},
+        "balance_due": {"$gt": 0}
+    }, {"_id": 0, "invoice_number": 1, "customer_name": 1, "balance_due": 1, "due_date": 1}).limit(10).to_list(10)
+    for inv in overdue_invoices:
+        alerts.append({
+            "type": "overdue_invoice",
+            "severity": "high",
+            "message": f"Invoice {inv.get('invoice_number')} for {inv.get('customer_name')} is overdue (due: {inv.get('due_date')})",
+            "data": inv
+        })
+    
+    # Check for duplicate invoice numbers
+    pipeline = [
+        {"$match": {"company_id": company_id}},
+        {"$group": {"_id": "$invoice_number", "count": {"$sum": 1}}},
+        {"$match": {"count": {"$gt": 1}}}
+    ]
+    duplicates = await db.invoices.aggregate(pipeline).to_list(10)
+    for dup in duplicates:
+        if dup.get("_id"):
+            alerts.append({
+                "type": "duplicate_invoice",
+                "severity": "medium",
+                "message": f"Duplicate invoice number: {dup.get('_id')} ({dup.get('count')} invoices)",
+                "data": dup
+            })
+    
+    # Check for expenses without category
+    no_category_expenses = await db.expenses.find({
+        "company_id": company_id,
+        "$or": [{"category": ""}, {"category": {"$exists": False}}]
+    }, {"_id": 0, "expense_id": 1, "vendor_name": 1, "amount": 1, "expense_date": 1}).limit(10).to_list(10)
+    for exp in no_category_expenses:
+        alerts.append({
+            "type": "missing_category",
+            "severity": "low",
+            "message": f"Expense from {exp.get('vendor_name')} (${exp.get('amount')}) has no category",
+            "data": exp
+        })
+    
+    # Check for products missing units_per_case
+    no_conversion = await db.products.find({
+        "company_id": company_id,
+        "$or": [{"units_per_case": {"$exists": False}}, {"units_per_case": None}]
+    }, {"_id": 0, "name": 1, "sku": 1}).limit(10).to_list(10)
+    for prod in no_conversion:
+        alerts.append({
+            "type": "missing_conversion",
+            "severity": "low",
+            "message": f"Product '{prod.get('name')}' (SKU: {prod.get('sku')}) missing units per case",
+            "data": prod
+        })
+    
+    return {"data": alerts, "count": len(alerts)}
 
 @app.on_event("startup")
 async def startup_scheduler():
