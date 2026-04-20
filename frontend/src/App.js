@@ -32,6 +32,8 @@ import ProductDetail from './pages/ProductDetail';
 import EditProduct from './pages/EditProduct';
 import InvoicePrint from './pages/InvoicePrint';
 import AIAssistant from './pages/AIAssistant';
+import AIImportCenter from './pages/AIImportCenter';
+import AIImportReview from './pages/AIImportReview';
 import Settings from './pages/Settings';
 import BalanceSheet from './pages/BalanceSheet';
 import CashFlow from './pages/CashFlow';
@@ -158,6 +160,12 @@ function AppRouter() {
       {/* Phase 3 routes */}
       <Route path="/ai-assistant" element={
         <ProtectedRoute><AIAssistant /></ProtectedRoute>
+      } />
+      <Route path="/ai-import" element={
+        <ProtectedRoute><AIImportCenter /></ProtectedRoute>
+      } />
+      <Route path="/ai-import/review/:uploadId" element={
+        <ProtectedRoute><AIImportReview /></ProtectedRoute>
       } />
       <Route path="/settings" element={
         <ProtectedRoute><Settings /></ProtectedRoute>

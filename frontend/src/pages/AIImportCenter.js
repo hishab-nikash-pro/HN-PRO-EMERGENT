@@ -153,7 +153,7 @@ export default function AIImportCenter() {
 
   return (
     <AppShell>
-      <div className="space-y-6 max-w-6xl">
+      <div className="space-y-6 max-w-6xl" data-testid="ai-import-center-page">
         <div>
           <h1 className="text-2xl font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>AI Import Center</h1>
           <p className="text-sm mt-0.5" style={{ color: '#434655' }}>Upload documents for intelligent data extraction</p>
@@ -187,11 +187,13 @@ export default function AIImportCenter() {
             className="hidden"
             id="file-upload"
             disabled={uploading}
+            data-testid="ai-import-file-input"
           />
           <label
             htmlFor="file-upload"
             className="inline-block mt-4 px-6 py-2.5 rounded-lg text-sm font-medium text-white cursor-pointer"
             style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}
+            data-testid="ai-import-choose-file-btn"
           >
             Choose File
           </label>
@@ -215,7 +217,7 @@ export default function AIImportCenter() {
               {uploads.map((u) => {
                 const confBadge = getConfidenceBadge(u.confidence);
                 return (
-                  <div key={u.upload_id} className="flex items-center gap-4 p-4 rounded-lg transition-colors hover:bg-[#F7F9FB]" style={{ border: '1px solid #F2F4F6' }}>
+                  <div key={u.upload_id} data-testid={`ai-upload-row-${u.upload_id}`} className="flex items-center gap-4 p-4 rounded-lg transition-colors hover:bg-[#F7F9FB]" style={{ border: '1px solid #F2F4F6' }}>
                     <div className="flex-shrink-0">{getStatusIcon(u.status)}</div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate" style={{ color: '#191C1E' }}>{u.file_name}</p>
@@ -236,6 +238,7 @@ export default function AIImportCenter() {
                           onClick={() => navigate(`/ai-import/review/${u.upload_id}`)}
                           className="px-3 py-1.5 rounded-lg text-xs font-medium text-white"
                           style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}
+                          data-testid={`review-btn-${u.upload_id}`}
                         >
                           <Eye size={14} weight="bold" className="inline mr-1" />
                           Review
@@ -245,6 +248,7 @@ export default function AIImportCenter() {
                         onClick={() => deleteUpload(u.upload_id)}
                         className="p-1.5 rounded-lg hover:bg-[#FEF2F2] transition-colors"
                         style={{ color: '#BA1A1A' }}
+                        data-testid={`delete-btn-${u.upload_id}`}
                       >
                         <Trash size={16} />
                       </button>

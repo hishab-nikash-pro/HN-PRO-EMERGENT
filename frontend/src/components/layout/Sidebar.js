@@ -5,7 +5,7 @@ import {
   House, ShoppingCart, Users, Truck, Receipt, Package,
   CurrencyDollar, Wallet, ChartBar, Robot, Gear,
   Plus, Headset, SignOut, CaretLeft, CaretRight, Tag,
-  Notebook, BookOpen, Scales, ArrowDown
+  Notebook, BookOpen, Scales, ArrowDown, UploadSimple
 } from '@phosphor-icons/react';
 import { useState } from 'react';
 
@@ -43,6 +43,7 @@ const navSections = [
     items: [
       { path: '/reports', label: 'Reports', icon: ChartBar },
       { path: '/ai-assistant', label: 'AI Assistant', icon: Robot },
+      { path: '/ai-import', label: 'AI Import Center', icon: UploadSimple, roles: ['Owner', 'Admin', 'Manager', 'Staff/Accountant'] },
       { path: '/settings', label: 'Settings', icon: Gear, roles: ['Owner', 'Admin'] },
     ]
   },

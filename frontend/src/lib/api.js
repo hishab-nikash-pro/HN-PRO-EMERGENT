@@ -90,6 +90,15 @@ export const aiExtractInvoice = (formData) => api.post('/ai/extract-invoice', fo
 export const getAiSessions = () => api.get('/ai/sessions');
 export const getAiSessionMessages = (sessionId) => api.get(`/ai/sessions/${sessionId}`);
 
+// AI Import Center
+export const aiUploadsList = (companyId) => api.get(`/companies/${companyId}/ai-uploads`);
+export const aiUploadCreate = (companyId, data) => api.post(`/companies/${companyId}/ai-uploads`, data);
+export const aiUploadGet = (companyId, uploadId) => api.get(`/companies/${companyId}/ai-uploads/${uploadId}`);
+export const aiUploadProcess = (companyId, uploadId) => api.post(`/companies/${companyId}/ai-uploads/${uploadId}/process`);
+export const aiUploadConfirm = (companyId, uploadId, data) => api.post(`/companies/${companyId}/ai-uploads/${uploadId}/confirm`, data);
+export const aiUploadDelete = (companyId, uploadId) => api.delete(`/companies/${companyId}/ai-uploads/${uploadId}`);
+export const getWorkflowAlerts = (companyId) => api.get(`/companies/${companyId}/workflow-alerts`);
+
 // Settings
 export const getSettings = (companyId) => api.get(`/settings/${companyId}`);
 export const updateSettings = (companyId, data) => api.put(`/settings/${companyId}`, data);

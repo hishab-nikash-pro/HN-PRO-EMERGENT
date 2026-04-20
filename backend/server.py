@@ -2427,8 +2427,6 @@ async def seed_data(company_id: str):
 async def root():
     return {"message": "Hishab Nikash Pro API"}
 
-app.include_router(api_router)
-
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
@@ -2470,6 +2468,17 @@ async def list_ai_uploads(company_id: str, user: dict = Depends(get_current_user
         {"_id": 0}
     ).sort("created_at", -1).limit(50).to_list(50)
     return {"data": uploads}
+
+@api_router.get("/companies/{company_id}/ai-uploads/{upload_id}")
+async def get_ai_upload(company_id: str, upload_id: str, user: dict = Depends(get_current_user)):
+    """Get a single AI upload with all extracted data for the review page"""
+    upload = await db.ai_uploads.find_one(
+        {"upload_id": upload_id, "company_id": company_id},
+        {"_id": 0}
+    )
+    if not upload:
+        raise HTTPException(status_code=404, detail="Upload not found")
+    return upload
 
 @api_router.post("/companies/{company_id}/ai-uploads/{upload_id}/process")
 async def process_ai_upload(company_id: str, upload_id: str, user: dict = Depends(get_current_user)):
@@ -2523,9 +2532,24 @@ Important:
         )
         
         response = await chat.send_message(user_message)
-        
-        # Parse AI response
-        extracted = json.loads(response)
+
+        # Parse AI response - strip markdown code fences if present
+        raw = (response or "").strip()
+        if raw.startswith("```"):
+            # Strip opening ``` or ```json
+            raw = raw.split("\n", 1)[1] if "\n" in raw else raw.lstrip("`")
+            # Strip closing ```
+            if raw.rstrip().endswith("```"):
+                raw = raw.rstrip().rstrip("`").rstrip()
+        try:
+            extracted = json.loads(raw)
+        except json.JSONDecodeError:
+            # Fallback: try to find a JSON object inside the response
+            import re as _re
+            match = _re.search(r"\{[\s\S]*\}", raw)
+            if not match:
+                raise
+            extracted = json.loads(match.group(0))
         
         # Update upload with extracted data
         await db.ai_uploads.update_one(
@@ -2761,6 +2785,8 @@ async def get_workflow_alerts(company_id: str, user: dict = Depends(get_current_
         })
     
     return {"data": alerts, "count": len(alerts)}
+
+app.include_router(api_router)
 
 @app.on_event("startup")
 async def startup_scheduler():
