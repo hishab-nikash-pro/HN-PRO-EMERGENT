@@ -1,0 +1,42 @@
+{
+  "summary": "Priority 2 (Inventory Cases Structure) completion testing. Backend 4/5 passed (1 skipped due to seed data). ProductsList and InventoryList frontend updates verified. CRITICAL gaps found in EditProduct modal (still shows old labels) and backward-compat logic is broken.",
+  "backend_issues": {
+    "critical": [
+      {"endpoint": "POST /api/companies/{cid}/products", "issue": "Backward-compat fallback for case_quantity NEVER triggers. ProductCreate has units_per_case default=1 (>0), so `if data.units_per_case > 0` is always True and `data.case_quantity` is never used. Posting {case_quantity:6} without units_per_case stored units_per_case=1. Fix: default units_per_case to 0, or use Optional[int]=None and check `if data.units_per_case and data.units_per_case > 0`.", "priority": "HIGH"},
+      {"endpoint": "POST /api/companies/{cid}/stock-receipts", "issue": "Cannot increment product.cases_on_hand because seeded inventory items have product_id=None (verified on ckfrozen — all 15 items return product_id: None). The conditional at server.py:1419 therefore never executes, so the intended dual update (inventory + products.cases_on_hand) is effectively broken for existing data. Seed data needs product_id linkage OR the stock-receipt endpoint should accept product_id directly.", "priority": "HIGH"}
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "EditProduct modal (/products Edit)", "issue": "Modal still shows old labels 'Case Price' and 'Case Quantity' instead of the expected new fields 'Units per Case', 'Cases on Hand', 'Available Cases'. Priority 2 spec requires these new field labels + Description field between Product and Category in the edit form.", "selector": "label:has-text('Units per Case'), label:has-text('Cases on Hand'), label:has-text('Available Cases')", "priority": "CRITICAL"},
+      {"component": "ProductDetail page", "issue": "Clicking a product row on /products opens the Edit modal directly — there is no dedicated ProductDetail page (URL remained /products). Expected labels 'Stock (Cases)', 'In Units', 'Units per Case' with conversion display (cases * units_per_case) could not be verified because the page does not exist in this build.", "selector": "tbody tr (click opens modal, not /products/{id})", "priority": "HIGH"}
+    ],
+    "integration_issues": [
+      {"flow": "Stock receipt -> product cases sync", "issue": "Even if the ReceiveStock form is used correctly, seeded inventory items have no product_id linkage, so products.cases_on_hand never updates end-to-end.", "affected_selectors": []}
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_priority2_cases.py",
+    "/app/test_reports/pytest/priority2_cases.xml"
+  ],
+  "action_items": [
+    "Fix backward-compat: change ProductCreate.units_per_case default to 0 (or Optional=None) so `if units_per_case > 0 else case_quantity or 1` actually falls through when caller omits units_per_case.",
+    "Re-link seeded inventory items to products (set inventory.product_id) OR allow stock-receipt payload to carry product_id so products.cases_on_hand is incremented reliably.",
+    "Update EditProduct.js modal: replace 'Case Quantity'/'Case Price' labels with 'Units per Case', add 'Cases on Hand' and 'Available Cases' fields, and add 'Description' input positioned between Product Name and Category.",
+    "Create an actual ProductDetail route/page (or make the row-click navigate to it) showing: Description, Units per Case in Pricing, Stock (Cases) section with Cases on Hand + Available Cases + 'In Units = cases × units_per_case'."
+  ],
+  "critical_code_review_comments": [
+    "server.py line 1630: `data.units_per_case if data.units_per_case > 0 else (data.case_quantity or 1)` — default of 1 defeats the else branch. This is a business-logic bug, not a test artefact.",
+    "server.py line 1419 relies on inventory.product_id being populated; seed data does not populate it, so the dual-update feature is unreachable in practice."
+  ],
+  "updated_files": ["/app/backend/tests/test_priority2_cases.py"],
+  "success_rate": {"backend": "80% (4/5, 1 skipped, 1 logic bug)", "frontend": "50% (list pages ok; edit modal + ProductDetail not updated)"},
+  "test_credentials": "Bearer test_session_ukrrqssgkvg on company ckfrozen",
+  "seed_data_creation": "Created TEST_P2_* products on ckfrozen (not cleaned up). One stock receipt rcpt_8c481bb6de for item itm_0c81a19bb1 (+3 cases).",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Backend tests at /app/backend/tests/test_priority2_cases.py. Backend PRODUCTS now do expose units_per_case/cases_on_hand/available_cases and update_product persists. The two unresolved backend defects are the units_per_case default (line 1630) and inventory<->product_id seed linkage. Frontend EditProduct modal and ProductDetail page still use old labels; ProductsList + InventoryList are correctly updated.",
+  "rca of the issue": "(1) ProductCreate.units_per_case: int = 1 makes the backward-compat `>0` check always true so case_quantity fallback is dead code. (2) Seed inventory rows were not populated with product_id, so the inventory->products.cases_on_hand $inc path is unreachable. (3) EditProduct.js was not actually rewritten to new labels; likely only the table headers were updated."
+}

@@ -251,8 +251,8 @@ export default function ReceiveStock() {
                   {/* Desktop header */}
                   <div className="hidden md:grid grid-cols-[1fr_100px_120px_110px_40px] gap-2 px-1 pb-2 text-[10px] font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>
                     <div>Product</div>
-                    <div className="text-right">Qty</div>
-                    <div className="text-right">Unit Cost</div>
+                    <div className="text-right">Cases</div>
+                    <div className="text-right">Cost/Case</div>
                     <div className="text-right">Line Total</div>
                     <div></div>
                   </div>
@@ -269,11 +269,11 @@ export default function ReceiveStock() {
                           </select>
                           <div className="grid grid-cols-3 md:contents gap-2">
                             <input data-testid={`receipt-qty-${idx}`} type="number" min="0" step="0.01" value={item.quantity}
-                              onChange={(e) => updateItem(idx, 'quantity', e.target.value)} placeholder="Qty"
+                              onChange={(e) => updateItem(idx, 'quantity', e.target.value)} placeholder="Cases"
                               className="px-2 py-2 text-sm rounded-md text-right focus:outline-none focus:ring-1"
                               style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #CBD5E1', color: '#0F172A' }} />
                             <input data-testid={`receipt-cost-${idx}`} type="number" min="0" step="0.01" value={item.unit_cost}
-                              onChange={(e) => updateItem(idx, 'unit_cost', e.target.value)} placeholder="Unit cost"
+                              onChange={(e) => updateItem(idx, 'unit_cost', e.target.value)} placeholder="Cost per case"
                               className="px-2 py-2 text-sm rounded-md text-right focus:outline-none focus:ring-1"
                               style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #CBD5E1', color: '#0F172A' }} />
                             <div className="px-2 py-2 text-sm font-semibold text-right tabular-nums self-center" style={{ fontFamily: 'Manrope, sans-serif', color: '#0F172A' }}>

@@ -31,9 +31,9 @@ export default function InventoryList() {
   );
 
   const totalValue = filtered.reduce((s, i) => s + (i.inventory_value || 0), 0);
-  const totalItems = filtered.reduce((s, i) => s + (i.stock_on_hand || 0), 0);
+  const totalCases = filtered.reduce((s, i) => s + (i.cases_on_hand || i.stock_on_hand || 0), 0);
   const categories = [...new Set(items.map(i => i.category).filter(Boolean))];
-  const lowStockCount = filtered.filter(i => i.stock_on_hand <= i.reorder_point).length;
+  const lowStockCount = filtered.filter(i => (i.cases_on_hand || i.stock_on_hand || 0) <= (i.reorder_point || 0)).length;
 
   return (
     <AppShell>
@@ -78,7 +78,7 @@ export default function InventoryList() {
         <div className="grid grid-cols-4 gap-4">
           {[
             { label: 'Total Inventory Value', value: `$${totalValue.toLocaleString('en-US', { minimumFractionDigits: 0 })}`, color: '#0F2D5C' },
-            { label: 'Total Items in Stock', value: totalItems.toLocaleString(), color: '#0E7490' },
+            { label: 'Total Cases in Stock', value: totalCases.toFixed(1), color: '#0E7490' },
             { label: 'Product SKUs', value: filtered.length, color: '#191C1E' },
             { label: 'Low Stock Alerts', value: lowStockCount, color: lowStockCount > 0 ? '#BA1A1A' : '#16a34a' },
           ].map(({ label, value, color }) => (
@@ -133,8 +133,8 @@ export default function InventoryList() {
                   <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Product</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Category</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Warehouse</th>
-                  <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>On Hand</th>
-                  <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Available</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Cases on Hand</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Available Cases</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Unit Cost</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Value</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Status</th>
@@ -144,7 +144,9 @@ export default function InventoryList() {
                 {filtered.length === 0 ? (
                   <tr><td colSpan={9} className="text-center py-12 text-sm" style={{ color: '#434655' }}>No inventory items found</td></tr>
                 ) : filtered.map((item, i) => {
-                  const isLow = item.stock_on_hand <= item.reorder_point;
+                  const casesOnHand = item.cases_on_hand || item.stock_on_hand || 0;
+                  const availableCases = item.available_cases || item.available_stock || casesOnHand;
+                  const isLow = casesOnHand <= (item.reorder_point || 0);
                   return (
                     <tr key={item.item_id} data-testid={`inventory-row-${item.item_id}`}
                       onClick={() => navigate(`/inventory/${item.item_id}`)}
@@ -155,9 +157,9 @@ export default function InventoryList() {
                       <td className="px-4 py-3"><span className="text-[11px] font-medium px-2 py-0.5 rounded-full" style={{ background: '#F2F4F6', color: '#434655' }}>{item.category}</span></td>
                       <td className="px-4 py-3" style={{ color: '#434655' }}>{item.warehouse}</td>
                       <td className="px-4 py-3 text-right font-semibold tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: isLow ? '#BA1A1A' : '#191C1E' }}>
-                        {item.stock_on_hand} {item.unit}
+                        {casesOnHand.toFixed(1)} cases
                       </td>
-                      <td className="px-4 py-3 text-right tabular-nums" style={{ color: '#191C1E' }}>{item.available_stock} {item.unit}</td>
+                      <td className="px-4 py-3 text-right tabular-nums" style={{ color: '#191C1E' }}>{availableCases.toFixed(1)} cases</td>
                       <td className="px-4 py-3 text-right tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>${(item.unit_cost || 0).toFixed(2)}</td>
                       <td className="px-4 py-3 text-right font-semibold tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>
                         ${(item.inventory_value || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}

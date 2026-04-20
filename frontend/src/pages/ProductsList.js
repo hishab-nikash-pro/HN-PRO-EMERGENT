@@ -128,17 +128,16 @@ export default function ProductsList() {
                 <tr style={{ background: '#F7F9FB', borderBottom: '1px solid #C4C5D7' }}>
                   <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>SKU</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Product Name</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Description</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Category</th>
-                  <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Cost Price</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Cases on Hand</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Selling Price</th>
-                  <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Case Price</th>
-                  <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Margin</th>
                   <th className="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
-                  <tr><td colSpan={8} className="text-center py-12 text-sm" style={{ color: '#434655' }}>No products found</td></tr>
+                  <tr><td colSpan={7} className="text-center py-12 text-sm" style={{ color: '#434655' }}>No products found</td></tr>
                 ) : filtered.map((p, i) => (
                   <tr key={p.product_id} data-testid={`product-row-${p.product_id}`}
                     onClick={() => navigate(`/products/${p.product_id}`)}
@@ -146,16 +145,14 @@ export default function ProductsList() {
                     style={{ background: i % 2 === 0 ? '#FFFFFF' : '#FAFBFC', borderBottom: '1px solid #F2F4F6' }}>
                     <td className="px-4 py-3 font-medium" style={{ color: '#0F2D5C' }}>{p.sku}</td>
                     <td className="px-4 py-3">
-                      <div>
-                        <p className="font-medium" style={{ color: '#191C1E' }}>{p.name}</p>
-                        <p className="text-xs mt-0.5 truncate max-w-xs" style={{ color: '#434655' }}>{p.description}</p>
-                      </div>
+                      <p className="font-medium" style={{ color: '#191C1E' }}>{p.name}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="text-xs truncate max-w-xs" style={{ color: '#434655' }}>{p.description || '—'}</p>
                     </td>
                     <td className="px-4 py-3"><span className="text-[11px] font-medium px-2 py-0.5 rounded-full" style={{ background: '#F2F4F6', color: '#434655' }}>{p.category}</span></td>
-                    <td className="px-4 py-3 text-right tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>${(p.cost_price || 0).toFixed(2)}</td>
+                    <td className="px-4 py-3 text-right font-semibold tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#0F2D5C' }}>{(p.cases_on_hand || 0).toFixed(1)}</td>
                     <td className="px-4 py-3 text-right font-semibold tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>${(p.selling_price || 0).toFixed(2)}</td>
-                    <td className="px-4 py-3 text-right tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#0E7490' }}>${(p.case_price || 0).toFixed(2)}</td>
-                    <td className="px-4 py-3 text-right font-medium" style={{ color: '#16a34a' }}>{margin(p)}%</td>
                     <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-1">
                         <button data-testid={`edit-product-${p.product_id}`} onClick={(e) => { e.stopPropagation(); handleEdit(p); }}

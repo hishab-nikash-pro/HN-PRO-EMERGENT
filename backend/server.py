@@ -1405,11 +1405,22 @@ async def create_stock_receipt(company_id: str, data: ReceiveStockCreate, user: 
     receipt.pop("_id", None)
     for item in data.items:
         if isinstance(item, dict) and item.get("item_id"):
+            cases_qty = item.get("quantity", 0)  # Quantity is in cases now
+            
+            # Update inventory (legacy field for backward compatibility)
             await db.inventory.update_one(
                 {"item_id": item["item_id"]},
-                {"$inc": {"stock_on_hand": item.get("quantity", 0), "available_stock": item.get("quantity", 0), "inventory_value": item.get("quantity", 0) * item.get("unit_cost", 0)},
-                 "$push": {"movement_history": {"movement_id": f"mov_{uuid.uuid4().hex[:8]}", "type": "receive", "quantity": item.get("quantity", 0), "reason": f"Stock Receipt {receipt['receipt_id']}", "reference": data.reference, "date": datetime.now(timezone.utc).isoformat(), "by": user["user_id"]}}}
+                {"$inc": {"stock_on_hand": cases_qty, "available_stock": cases_qty, "inventory_value": cases_qty * item.get("unit_cost", 0)},
+                 "$push": {"movement_history": {"movement_id": f"mov_{uuid.uuid4().hex[:8]}", "type": "receive", "quantity": cases_qty, "reason": f"Stock Receipt {receipt['receipt_id']}", "reference": data.reference, "date": datetime.now(timezone.utc).isoformat(), "by": user["user_id"]}}}
             )
+            
+            # Also update the product's cases_on_hand
+            inventory_item = await db.inventory.find_one({"item_id": item["item_id"]}, {"_id": 0, "product_id": 1})
+            if inventory_item and inventory_item.get("product_id"):
+                await db.products.update_one(
+                    {"product_id": inventory_item["product_id"]},
+                    {"$inc": {"cases_on_hand": cases_qty, "available_cases": cases_qty}}
+                )
     return receipt
 
 # ─── General Ledger & Trial Balance Routes ───
