@@ -1,26 +1,61 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { getMe, logout as logoutApi } from '../lib/api';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  clearSessionToken,
+  getMe,
+  login as loginApi,
+  logout as logoutApi,
+  selectAuthCompany as selectAuthCompanyApi,
+} from '../lib/api';
 
 const AuthContext = createContext(null);
 
+const EMPTY_PERMISSIONS = {
+  grants: [],
+  map: {},
+  can_edit_price: false,
+  can_delete_invoice: false,
+  can_export_data: false,
+  can_view_profit: false,
+};
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [companies, setCompanies] = useState([]);
+  const [activeCompanyId, setActiveCompanyId] = useState(null);
+  const [role, setRole] = useState('');
+  const [permissions, setPermissions] = useState(EMPTY_PERMISSIONS);
   const [loading, setLoading] = useState(true);
+
+  const applyAuthPayload = useCallback((payload) => {
+    setUser(payload?.user || null);
+    setCompanies(Array.isArray(payload?.companies) ? payload.companies : []);
+    setActiveCompanyId(payload?.active_company_id || null);
+    setRole(payload?.role || '');
+    setPermissions(payload?.permissions || EMPTY_PERMISSIONS);
+  }, []);
+
+  const clearAuthState = useCallback(() => {
+    clearSessionToken();
+    setUser(null);
+    setCompanies([]);
+    setActiveCompanyId(null);
+    setRole('');
+    setPermissions(EMPTY_PERMISSIONS);
+    localStorage.removeItem('hn_selected_company');
+  }, []);
 
   const checkAuth = useCallback(async () => {
     try {
       const res = await getMe();
-      setUser(res.data);
+      applyAuthPayload(res.data);
     } catch {
-      setUser(null);
+      clearAuthState();
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [applyAuthPayload, clearAuthState]);
 
   useEffect(() => {
-    // CRITICAL: If returning from OAuth callback, skip the /me check.
-    // AuthCallback will exchange the session_id and establish the session first.
     if (window.location.hash?.includes('session_id=')) {
       setLoading(false);
       return;
@@ -28,15 +63,57 @@ export function AuthProvider({ children }) {
     checkAuth();
   }, [checkAuth]);
 
-  const logout = async () => {
+  useEffect(() => {
+    if (activeCompanyId) {
+      localStorage.setItem('hn_selected_company', activeCompanyId);
+    } else {
+      localStorage.removeItem('hn_selected_company');
+    }
+  }, [activeCompanyId]);
+
+  const login = useCallback(async (credentials) => {
+    const res = await loginApi(credentials);
+    applyAuthPayload(res.data);
+    return res.data;
+  }, [applyAuthPayload]);
+
+  const selectCompany = useCallback(async (companyId) => {
+    const res = await selectAuthCompanyApi(companyId);
+    applyAuthPayload(res.data);
+    return res.data;
+  }, [applyAuthPayload]);
+
+  const logout = useCallback(async () => {
     try {
       await logoutApi();
-    } catch { /* ignore */ }
-    setUser(null);
-  };
+    } catch {
+      // ignore
+    }
+    clearAuthState();
+  }, [clearAuthState]);
+
+  const activeCompany = useMemo(
+    () => companies.find((company) => company.company_id === activeCompanyId) || null,
+    [companies, activeCompanyId]
+  );
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loading, logout, checkAuth }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        companies,
+        activeCompanyId,
+        activeCompany,
+        role,
+        permissions,
+        loading,
+        login,
+        logout,
+        checkAuth,
+        selectCompany,
+        clearAuthState,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -1,54 +1,62 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import api from '../lib/api';
+import { createContext, useCallback, useContext, useMemo } from 'react';
+import { useAuth } from './AuthContext';
 
 const CompanyContext = createContext(null);
 
 export function CompanyProvider({ children }) {
-  const [selectedCompany, setSelectedCompany] = useState(() => {
-    const saved = localStorage.getItem('hn_selected_company');
-    return saved ? JSON.parse(saved) : null;
-  });
-  const [role, setRole] = useState('Viewer');
-  const [roleLoading, setRoleLoading] = useState(false);
+  const {
+    activeCompany,
+    activeCompanyId,
+    role,
+    permissions,
+    selectCompany: selectAuthCompany,
+    checkAuth,
+  } = useAuth();
 
-  useEffect(() => {
-    if (selectedCompany) {
-      localStorage.setItem('hn_selected_company', JSON.stringify(selectedCompany));
-    }
-  }, [selectedCompany]);
+  const grants = permissions?.grants || [];
+  const grantMap = useMemo(() => permissions?.map || {}, [permissions]);
 
-  const refreshRole = useCallback(async () => {
-    if (!selectedCompany?.company_id) { setRole('Viewer'); return; }
-    setRoleLoading(true);
-    try {
-      const r = await api.get(`/auth/me-with-role?company_id=${selectedCompany.company_id}`);
-      setRole(r.data?.role || 'Viewer');
-    } catch {
-      setRole('Viewer');
-    } finally {
-      setRoleLoading(false);
-    }
-  }, [selectedCompany]);
+  const hasPermission = useCallback((slug) => Boolean(grantMap[slug]), [grantMap]);
 
-  useEffect(() => { refreshRole(); }, [refreshRole]);
+  const can = useMemo(() => ({
+    admin: role === 'OWNER',
+    manage: role === 'OWNER' || role === 'MANAGER',
+    write: role === 'OWNER' || role === 'MANAGER' || role === 'STAFF',
+    read: Boolean(activeCompanyId),
+    exportData: Boolean(permissions?.can_export_data),
+    editPrice: Boolean(permissions?.can_edit_price),
+    deleteInvoice: Boolean(permissions?.can_delete_invoice),
+    viewProfit: Boolean(permissions?.can_view_profit),
+    has: hasPermission,
+  }), [activeCompanyId, hasPermission, permissions, role]);
 
-  const selectCompany = (company) => setSelectedCompany(company);
+  const selectCompany = async (company) => {
+    const companyId = typeof company === 'string' ? company : company?.company_id;
+    if (!companyId) return null;
+    return selectAuthCompany(companyId);
+  };
+
   const clearCompany = () => {
-    setSelectedCompany(null);
-    setRole('Viewer');
     localStorage.removeItem('hn_selected_company');
   };
 
-  // Permission helpers
-  const can = {
-    admin: role === 'Owner' || role === 'Admin',
-    manage: ['Owner', 'Admin', 'Manager'].includes(role),
-    write: ['Owner', 'Admin', 'Manager', 'Staff/Accountant'].includes(role),
-    read: true,
-  };
-
   return (
-    <CompanyContext.Provider value={{ selectedCompany, selectCompany, clearCompany, role, roleLoading, refreshRole, can }}>
+    <CompanyContext.Provider
+      value={{
+        selectedCompany: activeCompany,
+        selectCompany,
+        clearCompany,
+        role,
+        roleLoading: false,
+        refreshRole: checkAuth,
+        can,
+        permissions: {
+          ...permissions,
+          grants,
+        },
+        companyProfile: activeCompany,
+      }}
+    >
       {children}
     </CompanyContext.Provider>
   );

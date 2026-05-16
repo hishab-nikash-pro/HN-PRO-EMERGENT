@@ -11,7 +11,9 @@ import { useCompany } from '../../contexts/CompanyContext';
 export default function RequireRole({ allowed = [], children, fallback = null }) {
   const { role } = useCompany();
   if (!allowed || !allowed.length) return children;
-  if (!allowed.includes(role)) return fallback;
+  const normalizedAllowed = allowed.map((entry) => String(entry || '').trim().toUpperCase().replace(/[^A-Z]+/g, '_'));
+  const normalizedRole = String(role || '').trim().toUpperCase().replace(/[^A-Z]+/g, '_');
+  if (!normalizedAllowed.includes(normalizedRole)) return fallback;
   return children;
 }
 

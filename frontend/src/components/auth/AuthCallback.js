@@ -5,7 +5,7 @@ import { exchangeSession } from '../../lib/api';
 
 export default function AuthCallback() {
   const navigate = useNavigate();
-  const { setUser } = useAuth();
+  const { checkAuth } = useAuth();
   const hasProcessed = useRef(false);
 
   useEffect(() => {
@@ -20,18 +20,18 @@ export default function AuthCallback() {
           navigate('/login', { replace: true });
           return;
         }
-        const res = await exchangeSession(sessionId);
-        setUser(res.data);
+        await exchangeSession(sessionId);
+        await checkAuth();
         // Clean the hash from URL
         window.history.replaceState(null, '', window.location.pathname);
-        navigate('/select-company', { replace: true, state: { user: res.data } });
+        navigate('/workspace-access', { replace: true });
       } catch (err) {
         console.error('Auth callback error:', err);
         navigate('/login', { replace: true });
       }
     };
     processAuth();
-  }, [navigate, setUser]);
+  }, [checkAuth, navigate]);
 
   return null;
 }
