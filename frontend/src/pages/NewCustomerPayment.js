@@ -1,22 +1,29 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useCompany } from '../contexts/CompanyContext';
 import { getCustomers, getInvoices, receivePaymentBulk } from '../lib/api';
 import AppShell from '../components/layout/AppShell';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle } from '@phosphor-icons/react';
 
 const PAYMENT_METHODS = ['Bank Transfer', 'Cash', 'Check', 'Credit Card', 'ACH', 'Wire', 'Other'];
 const money = (v) => `$${(Number(v) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const todayLocal = () => {
+  const now = new Date();
+  const offset = now.getTimezoneOffset() * 60000;
+  return new Date(now.getTime() - offset).toISOString().slice(0, 10);
+};
 
 export default function NewCustomerPayment() {
   const { selectedCompany } = useCompany();
   const navigate = useNavigate();
+  const location = useLocation();
+  const draftPayment = location.state?.draftPayment;
   const [customers, setCustomers] = useState([]);
   const [customerId, setCustomerId] = useState('');
   const [invoices, setInvoices] = useState([]);
-  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().slice(0, 10));
-  const [method, setMethod] = useState('Bank Transfer');
-  const [reference, setReference] = useState('');
+  const [paymentDate, setPaymentDate] = useState(draftPayment?.payment_date || todayLocal);
+  const [method, setMethod] = useState(draftPayment?.payment_method || 'Bank Transfer');
+  const [reference, setReference] = useState(draftPayment?.reference || '');
   const [depositTo, setDepositTo] = useState('Operating Account');
   const [amountsByInv, setAmountsByInv] = useState({});
   const [submitting, setSubmitting] = useState(false);
@@ -26,6 +33,20 @@ export default function NewCustomerPayment() {
     if (!selectedCompany) return;
     getCustomers(selectedCompany.company_id).then(r => setCustomers(r.data || []));
   }, [selectedCompany]);
+
+  useEffect(() => {
+    if (!draftPayment || !customers.length) return;
+    if (draftPayment.customer_id) {
+      setCustomerId(draftPayment.customer_id);
+      return;
+    }
+    const match = customers.find((customer) => (
+      String(customer.name || customer.store_name || '').trim().toLowerCase() === String(draftPayment.customer_name || '').trim().toLowerCase()
+    ));
+    if (match) {
+      setCustomerId(match.customer_id);
+    }
+  }, [draftPayment, customers]);
 
   useEffect(() => {
     if (!selectedCompany || !customerId) { setInvoices([]); setAmountsByInv({}); return; }
@@ -48,7 +69,7 @@ export default function NewCustomerPayment() {
   const applyFull = (inv) => handleAmount(inv.invoice_id, inv.balance_due, inv.balance_due);
   const clearInvoice = (invId) => setAmountsByInv(prev => ({ ...prev, [invId]: 0 }));
 
-  const autoApply = (total) => {
+  const autoApply = useCallback((total) => {
     let remaining = Number(total) || 0;
     const next = {};
     for (const inv of invoices) {
@@ -58,7 +79,12 @@ export default function NewCustomerPayment() {
       remaining -= take;
     }
     setAmountsByInv(next);
-  };
+  }, [invoices]);
+
+  useEffect(() => {
+    if (!draftPayment?.amount || !invoices.length) return;
+    autoApply(draftPayment.amount);
+  }, [draftPayment?.amount, invoices.length, autoApply]);
 
   const handleSubmit = async () => {
     if (!selectedCompany || !customerId || totalApplied <= 0) return;

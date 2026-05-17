@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { useCompany } from '../contexts/CompanyContext';
 import { getTrialBalance } from '../lib/api';
 import AppShell from '../components/layout/AppShell';
-import { Export, Printer, Check, X } from '@phosphor-icons/react';
+import { Export, Printer, Check, X, ArrowLeft } from '@phosphor-icons/react';
+import { useNavigate } from 'react-router-dom';
+import { downloadCSV, printReport } from '../lib/exportUtils';
 
 const TYPE_COLORS = { Asset: '#0F2D5C', Liability: '#BA1A1A', Equity: '#16a34a', Income: '#0E7490', Expense: '#7F2500' };
 
@@ -11,6 +13,7 @@ export default function TrialBalance() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [asOfDate, setAsOfDate] = useState('');
+  const navigate = useNavigate();
 
   const load = () => { if (!selectedCompany) return; setLoading(true);
     getTrialBalance(selectedCompany.company_id, asOfDate || undefined).then(r => setData(r.data)).catch(console.error).finally(() => setLoading(false)); };
@@ -19,13 +22,22 @@ export default function TrialBalance() {
   if (loading) return <AppShell><div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} /></div></AppShell>;
 
   const d = data || { rows: [], total_debit: 0, total_credit: 0, balanced: true };
+  const exportTrialBalance = () => {
+    downloadCSV('trial-balance.csv', d.rows.map((row) => ({
+      code: row.code || '',
+      name: row.name || '',
+      type: row.type || '',
+      debit: Number(row.debit || 0).toFixed(2),
+      credit: Number(row.credit || 0).toFixed(2),
+    })), ['code', 'name', 'type', 'debit', 'credit']);
+  };
 
   return (
     <AppShell>
       <div data-testid="trial-balance-page" className="space-y-6 max-w-4xl">
         <div className="flex items-center justify-between">
-          <div><h1 className="text-2xl font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Trial Balance</h1><p className="text-sm mt-0.5" style={{ color: '#434655' }}>{selectedCompany?.name} — As of {d.as_of_date}</p></div>
-          <div className="flex gap-2"><button className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><Export size={18} /></button><button className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><Printer size={18} /></button></div>
+          <div className="flex items-center gap-3"><button onClick={() => navigate('/reports')} className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><ArrowLeft size={20} /></button><div><h1 className="text-2xl font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Trial Balance</h1><p className="text-sm mt-0.5" style={{ color: '#434655' }}>{selectedCompany?.name} — As of {d.as_of_date}</p></div></div>
+          <div className="flex gap-2"><button onClick={exportTrialBalance} aria-label="Export trial balance" className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><Export size={18} /></button><button onClick={printReport} aria-label="Print trial balance" className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><Printer size={18} /></button></div>
         </div>
         <div className="flex items-center gap-3">
           <input type="date" value={asOfDate} onChange={(e) => setAsOfDate(e.target.value)} className="px-3 py-2 text-sm rounded-lg" style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }} />

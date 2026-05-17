@@ -1,0 +1,19 @@
+INFO:     Started server process [15164]
+INFO:     Waiting for application startup.
+2026-05-03 22:10:58,328 - server - INFO - Next daily low-stock check in 5.8 hours
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+2026-05-03 22:14:37,596 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "C:\Users\shoda\Downloads\HN-PRO-EM-BA-main\HN-PRO-EMERGENT-main\backend\.venv\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2026-05-03 22:17:58,007 - server - ERROR - Failed to send email: API key is invalid
+2026-05-03 22:17:58,010 - server - ERROR - Failed to send email: API key is invalid
+2026-05-03 22:20:03,406 - server - ERROR - Failed to send email: API key is invalid
+2026-05-03 22:20:03,416 - server - ERROR - Failed to send email: API key is invalid
+2026-05-03 22:20:03,671 - server - ERROR - Failed to send email: API key is invalid
+2026-05-03 22:20:13,645 - server - ERROR - Failed to send email: API key is invalid
+2026-05-03 22:20:13,674 - server - ERROR - Failed to send email: API key is invalid
+2026-05-03 22:20:13,886 - server - ERROR - Failed to send email: API key is invalid

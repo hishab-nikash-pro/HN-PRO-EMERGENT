@@ -12,7 +12,7 @@ export default function EditCustomer() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
-    name: '', company_name: '', phone: '', email: '', address: '', tax_id: '', notes: ''
+    store_name: '', contact_person: '', phone: '', email: '', address: '', website: '', tax_id: '', notes: ''
   });
 
   useEffect(() => {
@@ -21,11 +21,12 @@ export default function EditCustomer() {
       .then(res => {
         const c = res.data;
         setForm({
-          name: c.name || '',
-          company_name: c.company_name || '',
+          store_name: c.store_name || c.name || '',
+          contact_person: c.contact_person || c.company_name || '',
           phone: c.phone || '',
           email: c.email || '',
           address: c.address || '',
+          website: c.website || '',
           tax_id: c.tax_id || '',
           notes: c.notes || ''
         });
@@ -35,10 +36,21 @@ export default function EditCustomer() {
   }, [selectedCompany, customerId]);
 
   const handleSave = async () => {
-    if (!form.name) return;
+    if (!form.store_name) return;
     setSaving(true);
     try {
-      await updateCustomer(selectedCompany.company_id, customerId, form);
+      await updateCustomer(selectedCompany.company_id, customerId, {
+        name: form.store_name,
+        store_name: form.store_name,
+        company_name: form.contact_person,
+        contact_person: form.contact_person,
+        phone: form.phone,
+        email: form.email,
+        address: form.address,
+        website: form.website,
+        tax_id: form.tax_id,
+        notes: form.notes,
+      });
       navigate(`/customers/${customerId}`);
     } catch (err) {
       console.error(err);
@@ -76,14 +88,14 @@ export default function EditCustomer() {
         <div className="rounded-2xl p-6 space-y-5" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: '#434655' }}>Customer Name *</label>
-              <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
+              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: '#434655' }}>Store Name *</label>
+              <input type="text" value={form.store_name} onChange={(e) => setForm({ ...form, store_name: e.target.value })}
                 className="w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-1"
                 style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }} />
             </div>
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: '#434655' }}>Company Name</label>
-              <input type="text" value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })}
+              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: '#434655' }}>Contact Person</label>
+              <input type="text" value={form.contact_person} onChange={(e) => setForm({ ...form, contact_person: e.target.value })}
                 className="w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-1"
                 style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }} />
             </div>
@@ -105,6 +117,12 @@ export default function EditCustomer() {
                 className="w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-1"
                 style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }} />
             </div>
+            <div className="md:col-span-2">
+              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: '#434655' }}>Website</label>
+              <input type="text" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })}
+                className="w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-1"
+                style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }} />
+            </div>
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: '#434655' }}>Tax ID</label>
               <input type="text" value={form.tax_id} onChange={(e) => setForm({ ...form, tax_id: e.target.value })}
@@ -120,7 +138,7 @@ export default function EditCustomer() {
           </div>
 
           <div className="flex items-center gap-3 pt-4">
-            <button onClick={handleSave} disabled={saving || !form.name}
+            <button onClick={handleSave} disabled={saving || !form.store_name}
               className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-white disabled:opacity-50"
               style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
               <FloppyDisk size={16} weight="fill" /> {saving ? 'Saving...' : 'Save Changes'}

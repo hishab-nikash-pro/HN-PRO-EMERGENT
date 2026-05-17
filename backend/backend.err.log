@@ -1,0 +1,126 @@
+INFO:     Will watch for changes in these directories: ['C:\\Users\\shoda\\Downloads\\HN-PRO-EM-BA-main\\HN-PRO-EMERGENT-main\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [21800] using WatchFiles
+WARNING:  WatchFiles detected changes in '.venv\Lib\site-packages\google\generativeai\notebook\lib\llmfn_post_process.py', '.venv\Lib\site-packages\google\generativeai\types\text_types.py', '.venv\Lib\site-packages\google\generativeai\notebook\lib\__init__.py', '.venv\Lib\site-packages\google\generativeai\notebook\lib\llmfn_output_row.py', '.venv\Lib\site-packages\google\generativeai\notebook\lib\llmfn_inputs_source.py', '.venv\Lib\site-packages\google\generativeai\types\content_types.py', '.venv\Lib\site-packages\google\generativeai\types\file_types.py', '.venv\Lib\site-packages\google\generativeai\types\generation_types.py', '.venv\Lib\site-packages\google\generativeai\types\helper_types.py', '.venv\Lib\site-packages\google\generativeai\types\safety_types.py', '.venv\Lib\site-packages\google\generativeai\notebook\lib\llmfn_input_utils.py', '.venv\Lib\site-packages\google\generativeai\notebook\lib\llmfn_post_process_cmds.py', '.venv\Lib\site-packages\google\generativeai\types\model_types.py', '.venv\Lib\site-packages\google\generativeai\types\permission_types.py', '.venv\Lib\site-packages\google\generativeai\notebook\lib\unique_fn.py', '.venv\Lib\site-packages\google\generativeai\notebook\lib\prompt_utils.py', '.venv\Lib\site-packages\google\generativeai\notebook\lib\llm_function.py', '.venv\Lib\site-packages\google\generativeai\types\retriever_types.py', '.venv\Lib\site-packages\google\generativeai\types\caching_types.py', '.venv\Lib\site-packages\google\generativeai\notebook\lib\llmfn_outputs.py', '.venv\Lib\site-packages\google\generativeai\types\answer_types.py', '.venv\Lib\site-packages\google\generativeai\types\citation_types.py', '.venv\Lib\site-packages\google\generativeai\notebook\lib\model.py', '.venv\Lib\site-packages\google\generativeai\types\__init__.py', '.venv\Lib\site-packages\google\generativeai\types\palm_safety_types.py'. Reloading...
+INFO:     Started server process [21124]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "C:\Users\shoda\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\shoda\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\shoda\Downloads\HN-PRO-EM-BA-main\HN-PRO-EMERGENT-main\backend\.venv\Lib\site-packages\uvicorn\server.py", line 78, in serve
+    await self.startup(sockets=sockets)
+  File "C:\Users\shoda\Downloads\HN-PRO-EM-BA-main\HN-PRO-EMERGENT-main\backend\.venv\Lib\site-packages\uvicorn\server.py", line 89, in startup
+    await self.lifespan.startup()
+  File "C:\Users\shoda\Downloads\HN-PRO-EM-BA-main\HN-PRO-EMERGENT-main\backend\.venv\Lib\site-packages\uvicorn\lifespan\on.py", line 54, in startup
+    await self.startup_event.wait()
+  File "C:\Users\shoda\AppData\Local\Programs\Python\Python312\Lib\asyncio\locks.py", line 212, in wait
+    await fut
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\shoda\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\shoda\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 123, in run
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\shoda\Downloads\HN-PRO-EM-BA-main\HN-PRO-EMERGENT-main\backend\.venv\Lib\site-packages\starlette\routing.py", line 732, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\shoda\Downloads\HN-PRO-EM-BA-main\HN-PRO-EMERGENT-main\backend\.venv\Lib\site-packages\starlette\routing.py", line 608, in __aenter__
+    await self._router.startup()
+  File "C:\Users\shoda\Downloads\HN-PRO-EM-BA-main\HN-PRO-EMERGENT-main\backend\.venv\Lib\site-packages\starlette\routing.py", line 709, in startup
+    await handler()
+  File "C:\Users\shoda\Downloads\HN-PRO-EM-BA-main\HN-PRO-EMERGENT-main\backend\server.py", line 3006, in startup_scheduler
+    await ensure_default_companies()
+  File "C:\Users\shoda\Downloads\HN-PRO-EM-BA-main\HN-PRO-EMERGENT-main\backend\server.py", line 357, in ensure_default_companies
+    await db.companies.update_one(
+asyncio.exceptions.CancelledError
+
+Process SpawnProcess-1:
+Traceback (most recent call last):
+  File "C:\Users\shoda\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\shoda\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\shoda\Downloads\HN-PRO-EM-BA-main\HN-PRO-EMERGENT-main\backend\.venv\Lib\site-packages\uvicorn\server.py", line 78, in serve
+    await self.startup(sockets=sockets)
+  File "C:\Users\shoda\Downloads\HN-PRO-EM-BA-main\HN-PRO-EMERGENT-main\backend\.venv\Lib\site-packages\uvicorn\server.py", line 89, in startup
+    await self.lifespan.startup()
+  File "C:\Users\shoda\Downloads\HN-PRO-EM-BA-main\HN-PRO-EMERGENT-main\backend\.venv\Lib\site-packages\uvicorn\lifespan\on.py", line 54, in startup
+    await self.startup_event.wait()
+  File "C:\Users\shoda\AppData\Local\Programs\Python\Python312\Lib\asyncio\locks.py", line 212, in wait
+    await fut
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\shoda\AppData\Local\Programs\Python\Python312\Lib\multiprocessing\process.py", line 314, in _bootstrap
+    self.run()
+  File "C:\Users\shoda\AppData\Local\Programs\Python\Python312\Lib\multiprocessing\process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "C:\Users\shoda\Downloads\HN-PRO-EM-BA-main\HN-PRO-EMERGENT-main\backend\.venv\Lib\site-packages\uvicorn\_subprocess.py", line 76, in subprocess_started
+    target(sockets=sockets)
+  File "C:\Users\shoda\Downloads\HN-PRO-EM-BA-main\HN-PRO-EMERGENT-main\backend\.venv\Lib\site-packages\uvicorn\server.py", line 61, in run
+    return asyncio.run(self.serve(sockets=sockets))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\shoda\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\shoda\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 123, in run
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+INFO:     Started server process [16468]
+INFO:     Waiting for application startup.
+2026-04-21 22:14:02,650 - server - INFO - Next daily low-stock check in 5.8 hours
+INFO:     Application startup complete.
+2026-04-21 22:21:26,011 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "C:\Users\shoda\Downloads\HN-PRO-EM-BA-main\HN-PRO-EMERGENT-main\backend\.venv\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2026-04-21 22:35:50,484 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-04-21 22:35:50,774 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-04-21 22:35:50,775 - server - ERROR - AI processing error: Error code: 401 - {'error': {'message': "You didn't provide an API key. You need to provide your API key in an Authorization header using Bearer auth (i.e. Authorization: Bearer YOUR_KEY), or as the password field (with blank username) if you're accessing the API from your browser and are prompted for a username and password. You can obtain an API key from https://platform.openai.com/account/api-keys.", 'type': 'invalid_request_error', 'param': None, 'code': None}}
+2026-04-21 22:36:32,539 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-04-21 22:36:33,632 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-04-21 22:36:33,634 - server - ERROR - AI processing error: Error code: 401 - {'error': {'message': "You didn't provide an API key. You need to provide your API key in an Authorization header using Bearer auth (i.e. Authorization: Bearer YOUR_KEY), or as the password field (with blank username) if you're accessing the API from your browser and are prompted for a username and password. You can obtain an API key from https://platform.openai.com/account/api-keys.", 'type': 'invalid_request_error', 'param': None, 'code': None}}
+2026-04-21 22:36:51,688 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-04-21 22:36:51,892 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2026-04-21 22:36:51,894 - server - ERROR - AI chat error: Error code: 401 - {'error': {'message': "You didn't provide an API key. You need to provide your API key in an Authorization header using Bearer auth (i.e. Authorization: Bearer YOUR_KEY), or as the password field (with blank username) if you're accessing the API from your browser and are prompted for a username and password. You can obtain an API key from https://platform.openai.com/account/api-keys.", 'type': 'invalid_request_error', 'param': None, 'code': None}}
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [16468]
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+Process SpawnProcess-3:
+Traceback (most recent call last):
+  File "C:\Users\shoda\AppData\Local\Programs\Python\Python312\Lib\multiprocessing\process.py", line 314, in _bootstrap
+    self.run()
+  File "C:\Users\shoda\AppData\Local\Programs\Python\Python312\Lib\multiprocessing\process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "C:\Users\shoda\Downloads\HN-PRO-EM-BA-main\HN-PRO-EMERGENT-main\backend\.venv\Lib\site-packages\uvicorn\_subprocess.py", line 70, in subprocess_started
+    sys.stdin = os.fdopen(stdin_fileno)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen os>", line 1066, in fdopen
+  File "<frozen codecs>", line 309, in __init__
+KeyboardInterrupt
+INFO:     Started server process [22020]
+INFO:     Waiting for application startup.
+2026-04-21 22:45:24,271 - server - INFO - Next daily low-stock check in 5.2 hours
+INFO:     Application startup complete.

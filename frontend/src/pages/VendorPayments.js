@@ -3,7 +3,7 @@ import { useCompany } from '../contexts/CompanyContext';
 import { listVendorPayments } from '../lib/api';
 import AppShell from '../components/layout/AppShell';
 import { useNavigate } from 'react-router-dom';
-import { Plus, MagnifyingGlass, CaretRight } from '@phosphor-icons/react';
+import { Plus, MagnifyingGlass, Printer, ArrowLeft } from '@phosphor-icons/react';
 import DateFilterPreset from '../components/DateFilterPreset';
 
 const money = (v) => `$${(v || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -45,9 +45,12 @@ export default function VendorPayments() {
     <AppShell>
       <div data-testid="vendor-payments-page" className="space-y-5 md:space-y-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: '#0F172A' }}>Vendor Payments</h1>
-            <p className="text-sm mt-1" style={{ color: '#475569' }}>Payments made to vendors against bills</p>
+          <div className="flex items-center gap-3">
+            <button onClick={() => navigate('/payables')} className="p-2 rounded-lg hover:bg-white transition-colors" style={{ color: '#475569' }}><ArrowLeft size={20} /></button>
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: '#0F172A' }}>Vendor Payments</h1>
+              <p className="text-sm mt-1" style={{ color: '#475569' }}>Payments made to vendors against bills</p>
+            </div>
           </div>
           <button
             data-testid="new-vendor-payment-btn"
@@ -114,12 +117,14 @@ export default function VendorPayments() {
                     <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>Bill</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>Method</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>Reference</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>Check #</th>
                     <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>Amount</th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>Print</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.length === 0 ? (
-                    <tr><td colSpan={6} className="text-center py-12 text-sm" style={{ color: '#475569' }}>No payments yet</td></tr>
+                    <tr><td colSpan={8} className="text-center py-12 text-sm" style={{ color: '#475569' }}>No payments yet</td></tr>
                   ) : filtered.map((p, i) => (
                     <tr key={p.payment_id || i} data-testid={`vpayment-row-${p.payment_id || i}`}
                       className="transition-colors hover:bg-[#F7F9FB]"
@@ -129,8 +134,14 @@ export default function VendorPayments() {
                       <td className="px-4 py-3" style={{ color: '#0E7490' }}>{p.bill_number || '—'}</td>
                       <td className="px-4 py-3" style={{ color: '#475569' }}>{p.payment_method || '—'}</td>
                       <td className="px-4 py-3" style={{ color: '#475569' }}>{p.reference || '—'}</td>
+                      <td className="px-4 py-3" style={{ color: '#475569' }}>{p.check_number || '—'}</td>
                       <td className="px-4 py-3 text-right font-semibold tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#B91C1C' }}>
                         {money(p.amount)}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <button onClick={() => navigate(`/vendor-payments/${p.payment_id}/print`)} className="p-2 rounded-lg hover:bg-[#EFF6FF]" style={{ color: '#0F2D5C' }}>
+                          <Printer size={14} />
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -154,9 +165,12 @@ export default function VendorPayments() {
               <div className="min-w-0 flex-1">
                 <p className="font-semibold truncate" style={{ color: '#0F172A' }}>{p.vendor_name || '—'}</p>
                 <p className="text-xs mt-0.5" style={{ color: '#475569' }}>{p.payment_date} • {p.bill_number || '—'}</p>
-                <p className="text-[11px] mt-0.5" style={{ color: '#475569' }}>{p.payment_method}{p.reference ? ` • ${p.reference}` : ''}</p>
+                <p className="text-[11px] mt-0.5" style={{ color: '#475569' }}>{p.payment_method}{p.reference ? ` • ${p.reference}` : ''}{p.check_number ? ` • Check ${p.check_number}` : ''}</p>
               </div>
-              <span className="font-bold tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#B91C1C' }}>{money(p.amount)}</span>
+              <div className="text-right">
+                <span className="block font-bold tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#B91C1C' }}>{money(p.amount)}</span>
+                <button onClick={() => navigate(`/vendor-payments/${p.payment_id}/print`)} className="text-[11px] mt-1" style={{ color: '#0F2D5C' }}>Print</button>
+              </div>
             </div>
           ))}
         </div>

@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCompany } from '../contexts/CompanyContext';
-import { getInvoice, updateInvoice, recordPayment } from '../lib/api';
+import { getInvoice, updateInvoice, recordPayment, sendEmail } from '../lib/api';
 import AppShell from '../components/layout/AppShell';
-import { ArrowLeft, Printer, Copy, CurrencyDollar, Check, X } from '@phosphor-icons/react';
+import { ArrowLeft, Printer, Copy, CurrencyDollar, Check, X, Eye, WhatsappLogo, EnvelopeSimple, PencilSimple, FilePdf } from '@phosphor-icons/react';
 
 const STATUS_STYLES = {
   Draft: { bg: '#F2F4F6', color: '#434655' },
@@ -21,7 +21,10 @@ export default function InvoiceDetail() {
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
   const [paymentForm, setPaymentForm] = useState({ amount: 0, payment_date: new Date().toISOString().split('T')[0], payment_method: 'Bank Transfer', reference: '', memo: '' });
+  const [emailForm, setEmailForm] = useState({ recipient_email: '', subject: '', message: '' });
+  const [feedbackMessage, setFeedbackMessage] = useState('');
 
   useEffect(() => {
     if (!selectedCompany || !invoiceId) return;
@@ -30,6 +33,11 @@ export default function InvoiceDetail() {
         const res = await getInvoice(selectedCompany.company_id, invoiceId);
         setInvoice(res.data);
         setPaymentForm(prev => ({ ...prev, amount: res.data.balance_due || 0 }));
+        setEmailForm({
+          recipient_email: res.data.customer_email || '',
+          subject: `Invoice ${res.data.invoice_number} from ${selectedCompany?.name || 'Hishab Nikash Pro'}`,
+          message: `Please find invoice ${res.data.invoice_number} for ${res.data.customer_name}. Total due: $${(res.data.total || 0).toFixed(2)}.`,
+        });
       } catch (err) {
         console.error(err);
       } finally {
@@ -61,6 +69,50 @@ export default function InvoiceDetail() {
       const res = await getInvoice(selectedCompany.company_id, invoiceId);
       setInvoice(res.data);
     } catch (err) { console.error(err); }
+  };
+
+  const getPrintUrl = () => `${window.location.origin}/sales/${invoiceId}/print`;
+
+  const handlePreview = () => {
+    window.open(getPrintUrl(), '_blank', 'noopener,noreferrer');
+  };
+
+  const handlePrint = () => {
+    window.open(getPrintUrl(), '_blank', 'noopener,noreferrer');
+  };
+
+  const handleExportPdf = () => {
+    window.open(`${getPrintUrl()}?export=pdf`, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleShareWhatsApp = () => {
+    const message = `Invoice ${invoice.invoice_number} for ${invoice.customer_name}\nTotal: $${(invoice.total || 0).toFixed(2)}\nPreview: ${getPrintUrl()}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleSendEmail = async () => {
+    try {
+      await sendEmail({
+        recipient_email: emailForm.recipient_email,
+        subject: emailForm.subject,
+        html_content: `
+          <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+            <p>${emailForm.message}</p>
+            <p><strong>Invoice:</strong> ${invoice.invoice_number}</p>
+            <p><strong>Customer:</strong> ${invoice.customer_name}</p>
+            <p><strong>Total:</strong> $${(invoice.total || 0).toFixed(2)}</p>
+            <p><a href="${getPrintUrl()}">Open invoice preview</a></p>
+          </div>
+        `,
+      });
+      setShowEmailModal(false);
+      setFeedbackMessage('Invoice email sent successfully.');
+      setTimeout(() => setFeedbackMessage(''), 3000);
+    } catch (error) {
+      console.error(error);
+      setFeedbackMessage(error?.response?.data?.detail || 'Unable to send invoice email right now.');
+      setTimeout(() => setFeedbackMessage(''), 4000);
+    }
   };
 
   if (loading) {
@@ -97,6 +149,23 @@ export default function InvoiceDetail() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <button onClick={handlePreview} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[#F2F4F6]" style={{ color: '#434655', boxShadow: '0 0 0 1px #C4C5D7' }}>
+              <Eye size={16} /> Preview
+            </button>
+            <button onClick={handleExportPdf} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[#F2F4F6]" style={{ color: '#434655', boxShadow: '0 0 0 1px #C4C5D7' }}>
+              <FilePdf size={16} /> Export PDF
+            </button>
+            {invoice.status !== 'Paid' && invoice.status !== 'Cancelled' && (
+              <button onClick={() => navigate(`/sales/${invoiceId}/edit`)} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[#F2F4F6]" style={{ color: '#434655', boxShadow: '0 0 0 1px #C4C5D7' }}>
+                <PencilSimple size={16} /> Edit
+              </button>
+            )}
+            <button onClick={handleShareWhatsApp} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:opacity-90" style={{ background: '#25D366', color: '#FFFFFF' }}>
+              <WhatsappLogo size={16} /> WhatsApp
+            </button>
+            <button onClick={() => setShowEmailModal(true)} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[#F2F4F6]" style={{ color: '#434655', boxShadow: '0 0 0 1px #C4C5D7' }}>
+              <EnvelopeSimple size={16} /> Email
+            </button>
             {invoice.status !== 'Paid' && invoice.status !== 'Cancelled' && (
               <>
                 <button
@@ -117,13 +186,18 @@ export default function InvoiceDetail() {
                 </button>
               </>
             )}
-            <button onClick={() => navigate(`/sales/${invoiceId}/print`)} data-testid="print-invoice-btn" className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[#F2F4F6]" style={{ color: '#434655', boxShadow: '0 0 0 1px #C4C5D7' }}><Printer size={16} /> Print</button>
+            <button onClick={handlePrint} data-testid="print-invoice-btn" className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[#F2F4F6]" style={{ color: '#434655', boxShadow: '0 0 0 1px #C4C5D7' }}><Printer size={16} /> Print</button>
             <button onClick={() => navigate(`/sales/${invoiceId}/packing-list`)} data-testid="packing-list-btn" className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[#F2F4F6]" style={{ color: '#434655', boxShadow: '0 0 0 1px #C4C5D7' }}><Copy size={16} /> Packing List</button>
             {invoice.status !== 'Cancelled' && invoice.status !== 'Paid' && (
               <button onClick={handleCancel} className="p-2 rounded-lg hover:bg-[#fef2f2] transition-colors" style={{ color: '#BA1A1A' }}><X size={18} /></button>
             )}
           </div>
         </div>
+        {feedbackMessage && (
+          <div className="rounded-2xl px-4 py-3 text-sm font-medium" style={{ background: '#EFF6FF', color: '#1D4ED8' }}>
+            {feedbackMessage}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Invoice Content */}
@@ -271,6 +345,52 @@ export default function InvoiceDetail() {
                 <button onClick={() => setShowPaymentModal(false)} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ color: '#434655' }}>Cancel</button>
                 <button data-testid="submit-payment-btn" onClick={handleRecordPayment} className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
                   Record Payment
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showEmailModal && (
+          <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(25,28,30,0.5)' }}>
+            <div className="rounded-2xl p-6 w-full max-w-lg" style={{ background: '#FFFFFF' }}>
+              <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Send Invoice by Email</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: '#434655' }}>Recipient Email</label>
+                  <input
+                    type="email"
+                    value={emailForm.recipient_email}
+                    onChange={(e) => setEmailForm({ ...emailForm, recipient_email: e.target.value })}
+                    className="w-full px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:ring-1"
+                    style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: '#434655' }}>Subject</label>
+                  <input
+                    type="text"
+                    value={emailForm.subject}
+                    onChange={(e) => setEmailForm({ ...emailForm, subject: e.target.value })}
+                    className="w-full px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:ring-1"
+                    style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: '#434655' }}>Message</label>
+                  <textarea
+                    rows={5}
+                    value={emailForm.message}
+                    onChange={(e) => setEmailForm({ ...emailForm, message: e.target.value })}
+                    className="w-full px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:ring-1 resize-none"
+                    style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 mt-6">
+                <button onClick={() => setShowEmailModal(false)} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ color: '#434655' }}>Cancel</button>
+                <button onClick={handleSendEmail} className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
+                  Send Email
                 </button>
               </div>
             </div>

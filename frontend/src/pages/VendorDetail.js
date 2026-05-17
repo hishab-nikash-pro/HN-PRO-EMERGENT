@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCompany } from '../contexts/CompanyContext';
-import { getVendor } from '../lib/api';
+import { getVendor, getVendorPurchaseOrders } from '../lib/api';
 import AppShell from '../components/layout/AppShell';
 import { ArrowLeft, EnvelopeSimple, Phone, MapPin } from '@phosphor-icons/react';
 
@@ -10,14 +10,19 @@ export default function VendorDetail() {
   const { selectedCompany } = useCompany();
   const navigate = useNavigate();
   const [vendor, setVendor] = useState(null);
+  const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!selectedCompany || !vendorId) return;
     const load = async () => {
       try {
-        const res = await getVendor(selectedCompany.company_id, vendorId);
-        setVendor(res.data);
+        const [vendorRes, poRes] = await Promise.all([
+          getVendor(selectedCompany.company_id, vendorId),
+          getVendorPurchaseOrders(selectedCompany.company_id, vendorId),
+        ]);
+        setVendor(vendorRes.data);
+        setPurchaseOrders(poRes.data);
       } catch (err) { console.error(err); }
       finally { setLoading(false); }
     };
@@ -47,6 +52,13 @@ export default function VendorDetail() {
             style={{ color: '#191C1E', boxShadow: '0 0 0 1px #C4C5D7' }}
           >
             Edit
+          </button>
+          <button
+            onClick={() => navigate(`/vendor-ledger?vendor_id=${vendorId}`)}
+            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[#F2F4F6]"
+            style={{ color: '#191C1E', boxShadow: '0 0 0 1px #C4C5D7' }}
+          >
+            Ledger
           </button>
         </div>
 
@@ -94,11 +106,33 @@ export default function VendorDetail() {
 
           <div className="lg:col-span-2">
             <div className="rounded-2xl p-6" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-              <h3 className="text-sm font-semibold mb-4" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Bills & Payment History</h3>
-              <div className="text-center py-12">
-                <p className="text-sm" style={{ color: '#434655' }}>Bill management will be available in Phase 2</p>
-                <p className="text-xs mt-1" style={{ color: '#434655', opacity: 0.7 }}>Track vendor bills, payments, and credits</p>
-              </div>
+              <h3 className="text-sm font-semibold mb-4" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Purchase Order History</h3>
+              {purchaseOrders.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-sm" style={{ color: '#434655' }}>No purchase orders yet</p>
+                </div>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr style={{ background: '#F7F9FB', borderBottom: '1px solid #C4C5D7' }}>
+                      <th className="text-left px-4 py-3 text-xs font-semibold uppercase" style={{ color: '#434655' }}>PO</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold uppercase" style={{ color: '#434655' }}>Date</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold uppercase" style={{ color: '#434655' }}>Status</th>
+                      <th className="text-right px-4 py-3 text-xs font-semibold uppercase" style={{ color: '#434655' }}>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {purchaseOrders.map((order, i) => (
+                      <tr key={order.purchase_order_id} onClick={() => navigate(`/purchase-orders/${order.purchase_order_id}`)} className="cursor-pointer hover:bg-[#F7F9FB]" style={{ background: i % 2 === 0 ? '#FFFFFF' : '#FAFBFC', borderBottom: '1px solid #F2F4F6' }}>
+                        <td className="px-4 py-3 font-medium" style={{ color: '#0F2D5C' }}>{order.purchase_order_number}</td>
+                        <td className="px-4 py-3" style={{ color: '#434655' }}>{order.order_date}</td>
+                        <td className="px-4 py-3"><span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: '#EFF6FF', color: '#0F2D5C' }}>{order.status}</span></td>
+                        <td className="px-4 py-3 text-right font-semibold tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>${(order.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         </div>

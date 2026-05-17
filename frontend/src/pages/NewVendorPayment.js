@@ -7,6 +7,11 @@ import { ArrowLeft, CheckCircle } from '@phosphor-icons/react';
 
 const PAYMENT_METHODS = ['Bank Transfer', 'Cash', 'Check', 'Credit Card', 'ACH', 'Wire', 'Other'];
 const money = (v) => `$${(Number(v) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const todayLocal = () => {
+  const now = new Date();
+  const offset = now.getTimezoneOffset() * 60000;
+  return new Date(now.getTime() - offset).toISOString().slice(0, 10);
+};
 
 export default function NewVendorPayment() {
   const { selectedCompany } = useCompany();
@@ -14,10 +19,13 @@ export default function NewVendorPayment() {
   const [vendors, setVendors] = useState([]);
   const [vendorId, setVendorId] = useState('');
   const [bills, setBills] = useState([]);
-  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().slice(0, 10));
+  const [paymentDate, setPaymentDate] = useState(todayLocal);
   const [method, setMethod] = useState('Bank Transfer');
   const [reference, setReference] = useState('');
   const [paidFrom, setPaidFrom] = useState('Operating Account');
+  const [checkNumber, setCheckNumber] = useState('');
+  const [checkDate, setCheckDate] = useState(todayLocal);
+  const [memo, setMemo] = useState('');
   const [amountsByBill, setAmountsByBill] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -69,7 +77,8 @@ export default function NewVendorPayment() {
         .map(([bill_id, amount]) => ({ bill_id, amount: Number(amount) }));
       await payVendorBulk(selectedCompany.company_id, {
         vendor_id: vendorId, payment_date: paymentDate, payment_method: method,
-        reference, paid_from: paidFrom, applications
+        reference, paid_from: paidFrom, bank_account_name: paidFrom,
+        check_number: checkNumber, check_date: checkDate, memo, applications
       });
       setSuccess(true);
       setTimeout(() => navigate('/vendor-payments'), 1200);
@@ -130,6 +139,28 @@ export default function NewVendorPayment() {
                 className="w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-1"
                 style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #CBD5E1', color: '#0F172A' }} />
             </div>
+            {method === 'Check' && (
+              <>
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: '#475569' }}>Check Number</label>
+                  <input value={checkNumber} onChange={(e) => setCheckNumber(e.target.value)} placeholder="Check number"
+                    className="w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-1"
+                    style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #CBD5E1', color: '#0F172A' }} />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: '#475569' }}>Check Date</label>
+                  <input type="date" value={checkDate} onChange={(e) => setCheckDate(e.target.value)}
+                    className="w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-1"
+                    style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #CBD5E1', color: '#0F172A' }} />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: '#475569' }}>Check Memo</label>
+                  <input value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="Optional memo for the printed voucher"
+                    className="w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-1"
+                    style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #CBD5E1', color: '#0F172A' }} />
+                </div>
+              </>
+            )}
           </div>
         </div>
 

@@ -3,6 +3,7 @@ import { useCompany } from '../contexts/CompanyContext';
 import { getGeneralLedger, getAccounts } from '../lib/api';
 import AppShell from '../components/layout/AppShell';
 import { Export, Printer, CaretDown, CaretRight } from '@phosphor-icons/react';
+import { downloadCSV, printReport } from '../lib/exportUtils';
 
 export default function GeneralLedger() {
   const { selectedCompany } = useCompany();
@@ -13,6 +14,18 @@ export default function GeneralLedger() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [expanded, setExpanded] = useState({});
+  const exportLedger = () => {
+    downloadCSV('general-ledger.csv', ledger.flatMap((account) => (account.entries || []).map((entry) => ({
+      account_code: account.code || '',
+      account_name: account.name || '',
+      date: entry.date || '',
+      entry_number: entry.entry_number || '',
+      description: entry.description || '',
+      debit: Number(entry.debit || 0).toFixed(2),
+      credit: Number(entry.credit || 0).toFixed(2),
+      balance: Number(entry.balance || 0).toFixed(2),
+    }))), ['account_code', 'account_name', 'date', 'entry_number', 'description', 'debit', 'credit', 'balance']);
+  };
 
   const load = () => { if (!selectedCompany) return; setLoading(true);
     const params = {};
@@ -28,7 +41,7 @@ export default function GeneralLedger() {
       <div data-testid="general-ledger-page" className="space-y-6">
         <div className="flex items-center justify-between">
           <div><h1 className="text-2xl font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>General Ledger</h1><p className="text-sm mt-1" style={{ color: '#434655' }}>All posted transactions by account</p></div>
-          <div className="flex gap-2"><button className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><Export size={18} /></button><button className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><Printer size={18} /></button></div>
+          <div className="flex gap-2"><button onClick={exportLedger} aria-label="Export general ledger" className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><Export size={18} /></button><button onClick={printReport} aria-label="Print general ledger" className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><Printer size={18} /></button></div>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <select value={accountFilter} onChange={(e) => setAccountFilter(e.target.value)} className="px-3 py-2 text-sm rounded-lg" style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }}><option value="">All Accounts</option>{accounts.map(a => <option key={a.account_id} value={a.code}>{a.code} - {a.name}</option>)}</select>

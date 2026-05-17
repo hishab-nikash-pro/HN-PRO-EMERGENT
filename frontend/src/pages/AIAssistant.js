@@ -72,7 +72,8 @@ export default function AIAssistant() {
       if (lowerResp.includes('report') && (lowerResp.includes('view') || lowerResp.includes('generate') || lowerResp.includes('run'))) actions.push('view_reports');
       setMessages([...newMessages, { role: 'assistant', content: response, suggestedActions: actions }]);
     } catch (err) {
-      setMessages([...newMessages, { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' }]);
+      const detail = err?.response?.data?.detail || 'Sorry, I encountered an error. Please try again.';
+      setMessages([...newMessages, { role: 'assistant', content: detail }]);
     } finally {
       setLoading(false);
     }

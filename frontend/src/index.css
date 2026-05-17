@@ -21,6 +21,17 @@
   --hn-success: #047857;
   --hn-warning: #B45309;
   --hn-error: #B91C1C;
+  --hn-sidebar-width: 16rem;
+}
+
+:root[data-density="compact"] {
+  --hn-sidebar-width: 14.5rem;
+  font-size: 14.4px;
+}
+
+:root[data-density="comfortable"] {
+  --hn-sidebar-width: 16rem;
+  font-size: 16px;
 }
 
 body {
@@ -30,6 +41,55 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background: var(--hn-surface);
   color: var(--hn-text-main);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.hn-app-content {
+  margin-left: 0;
+}
+
+@media (min-width: 1024px) {
+  .hn-app-content {
+    margin-left: var(--hn-sidebar-width, 16rem);
+  }
+}
+
+[data-density="compact"] [data-testid="app-header"] {
+  padding-top: 0.55rem !important;
+}
+
+[data-density="compact"] [data-testid="app-header"] > div {
+  min-height: 3.35rem !important;
+  border-radius: 20px !important;
+}
+
+[data-density="compact"] main {
+  padding-top: 0.85rem !important;
+}
+
+[data-density="compact"] table th,
+[data-density="compact"] table td {
+  padding-top: 0.55rem !important;
+  padding-bottom: 0.55rem !important;
+}
+
+[data-density="compact"] .rounded-\[28px\] {
+  border-radius: 22px !important;
+}
+
+[data-density="compact"] .rounded-\[24px\] {
+  border-radius: 20px !important;
+}
+
+[data-density="compact"] .p-6 {
+  padding: 1.25rem !important;
+}
+
+[data-density="compact"] .p-5 {
+  padding: 1rem !important;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -153,8 +213,10 @@ code {
   h2 { font-size: 1.1rem !important; }
   /* Larger tap targets */
   button, [role="button"], a { min-height: 36px; }
-  /* Main padding tighter */
-  main { padding: 12px !important; }
+  main { padding-left: 12px !important; padding-right: 12px !important; }
+  [data-testid="app-header"] { padding-top: 12px !important; }
+  [data-testid="app-sidebar"] { width: min(86vw, 320px) !important; }
+  .rounded-\[28px\] { border-radius: 24px !important; }
 }
 
 /* Print styles: hide chrome */

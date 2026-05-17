@@ -1,17 +1,21 @@
 import { useEffect, useState } from 'react';
 import { useCompany } from '../contexts/CompanyContext';
-import { getVendors } from '../lib/api';
+import ConfirmDeleteModal from '../components/common/ConfirmDeleteModal';
+import { deleteVendor, getVendors } from '../lib/api';
 import AppShell from '../components/layout/AppShell';
 import { useNavigate } from 'react-router-dom';
-import { Plus, MagnifyingGlass, Export } from '@phosphor-icons/react';
+import { Plus, MagnifyingGlass, Export, Trash } from '@phosphor-icons/react';
+import { downloadCSV } from '../lib/exportUtils';
 
 export default function VendorsList() {
-  const { selectedCompany } = useCompany();
+  const { selectedCompany, can } = useCompany();
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newVendor, setNewVendor] = useState({ name: '', company_name: '', phone: '', email: '', address: '' });
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,10 +30,25 @@ export default function VendorsList() {
     load();
   }, [selectedCompany]);
 
+  const searchTerm = search.toLowerCase();
   const filtered = vendors.filter(v =>
-    v.name?.toLowerCase().includes(search.toLowerCase()) ||
-    v.company_name?.toLowerCase().includes(search.toLowerCase())
+    v.name?.toLowerCase().includes(searchTerm) ||
+    v.company_name?.toLowerCase().includes(searchTerm) ||
+    v.phone?.toLowerCase().includes(searchTerm) ||
+    v.email?.toLowerCase().includes(searchTerm)
   );
+
+  const exportVendors = () => {
+    downloadCSV('vendors.csv', filtered.map((vendor) => ({
+      name: vendor.name || '',
+      company_name: vendor.company_name || '',
+      phone: vendor.phone || '',
+      email: vendor.email || '',
+      payable_balance: Number(vendor.payable_balance || 0).toFixed(2),
+      bill_count: vendor.bill_count || 0,
+      status: vendor.status || '',
+    })), ['name', 'company_name', 'phone', 'email', 'payable_balance', 'bill_count', 'status']);
+  };
 
   const handleCreateVendor = async () => {
     try {
@@ -42,10 +61,25 @@ export default function VendorsList() {
     } catch (err) { console.error(err); }
   };
 
+  const handleDeleteVendor = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await deleteVendor(selectedCompany.company_id, deleteTarget.vendor_id);
+      const res = await getVendors(selectedCompany.company_id);
+      setVendors(res.data || []);
+      setDeleteTarget(null);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <AppShell>
       <div data-testid="vendors-list-page" className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Vendors</h1>
             <p className="text-sm mt-1" style={{ color: '#434655' }}>Manage vendor accounts and payables</p>
@@ -60,7 +94,7 @@ export default function VendorsList() {
           </button>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1 max-w-xs">
             <MagnifyingGlass size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#434655' }} />
             <input
@@ -71,10 +105,10 @@ export default function VendorsList() {
               style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }}
             />
           </div>
-          <button className="p-2 rounded-lg hover:bg-white transition-colors" style={{ color: '#434655' }}><Export size={18} /></button>
+          <button onClick={exportVendors} aria-label="Export vendors" className="p-2 rounded-lg hover:bg-white transition-colors" style={{ color: '#434655' }}><Export size={18} /></button>
         </div>
 
-        <div className="rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+        <div className="overflow-x-auto rounded-2xl" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
           {loading ? (
             <div className="flex items-center justify-center h-48">
               <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} />
@@ -90,11 +124,12 @@ export default function VendorsList() {
                   <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Payable Balance</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Bills</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Status</th>
+                  <th className="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
-                  <tr><td colSpan={7} className="text-center py-12 text-sm" style={{ color: '#434655' }}>No vendors found</td></tr>
+                  <tr><td colSpan={8} className="text-center py-12 text-sm" style={{ color: '#434655' }}>No vendors found</td></tr>
                 ) : filtered.map((v, i) => (
                   <tr
                     key={v.vendor_id}
@@ -123,6 +158,20 @@ export default function VendorsList() {
                         style={{ background: v.status === 'Active' ? '#dcfce7' : '#F2F4F6', color: v.status === 'Active' ? '#16a34a' : '#434655' }}>
                         {v.status}
                       </span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      {can.admin && (
+                        <button
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setDeleteTarget(v);
+                          }}
+                          className="rounded-lg p-1.5 hover:bg-[#FEF2F2]"
+                          style={{ color: '#B42318' }}
+                        >
+                          <Trash size={14} />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -165,6 +214,8 @@ export default function VendorsList() {
             </div>
           </div>
         )}
+
+        <ConfirmDeleteModal open={Boolean(deleteTarget)} onCancel={() => setDeleteTarget(null)} onConfirm={handleDeleteVendor} loading={deleting} />
       </div>
     </AppShell>
   );

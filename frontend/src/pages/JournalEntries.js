@@ -3,6 +3,7 @@ import { useCompany } from '../contexts/CompanyContext';
 import { getJournalEntries, createJournalEntry, postJournalEntry, getAccounts } from '../lib/api';
 import AppShell from '../components/layout/AppShell';
 import { Plus, Check, Trash, Export } from '@phosphor-icons/react';
+import { downloadCSV } from '../lib/exportUtils';
 
 export default function JournalEntries() {
   const { selectedCompany } = useCompany();
@@ -20,6 +21,16 @@ export default function JournalEntries() {
   const totalDebit = form.lines.reduce((s, l) => s + (parseFloat(l.debit) || 0), 0);
   const totalCredit = form.lines.reduce((s, l) => s + (parseFloat(l.credit) || 0), 0);
   const balanced = Math.abs(totalDebit - totalCredit) < 0.01;
+  const exportJournalEntries = () => {
+    downloadCSV('journal-entries.csv', entries.map((entry) => ({
+      entry_number: entry.entry_number || '',
+      entry_date: entry.entry_date || '',
+      description: entry.description || '',
+      total_debit: Number(entry.total_debit || 0).toFixed(2),
+      total_credit: Number(entry.total_credit || 0).toFixed(2),
+      status: entry.status || '',
+    })), ['entry_number', 'entry_date', 'description', 'total_debit', 'total_credit', 'status']);
+  };
 
   const updateLine = (idx, field, value) => {
     const lines = [...form.lines];
@@ -55,7 +66,7 @@ export default function JournalEntries() {
           <div><h1 className="text-2xl font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Journal Entries</h1>
             <p className="text-sm mt-1" style={{ color: '#434655' }}>Double-entry accounting transactions</p></div>
           <div className="flex gap-2">
-            <button className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><Export size={18} /></button>
+            <button onClick={exportJournalEntries} aria-label="Export journal entries" className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><Export size={18} /></button>
             <button data-testid="new-journal-entry-btn" onClick={() => setShowModal(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}><Plus size={16} weight="bold" /> New Entry</button>
           </div>
         </div>

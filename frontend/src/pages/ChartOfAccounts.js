@@ -3,6 +3,7 @@ import { useCompany } from '../contexts/CompanyContext';
 import { getAccounts, createAccount } from '../lib/api';
 import AppShell from '../components/layout/AppShell';
 import { Plus, MagnifyingGlass, Export } from '@phosphor-icons/react';
+import { downloadCSV } from '../lib/exportUtils';
 
 const TYPES = ['Asset', 'Liability', 'Equity', 'Income', 'Expense'];
 const SUB_TYPES = { Asset: ['Current Asset', 'Fixed Asset'], Liability: ['Current Liability', 'Long-Term'], Equity: ["Owner's Equity"], Income: ['Operating Revenue', 'Other Revenue'], Expense: ['Operating Expense', 'Cost of Sales'] };
@@ -20,6 +21,16 @@ export default function ChartOfAccounts() {
   useEffect(() => { load(); }, [selectedCompany]);
 
   const filtered = accounts.filter(a => a.code?.includes(search) || a.name?.toLowerCase().includes(search.toLowerCase()));
+  const exportAccounts = () => {
+    downloadCSV('chart-of-accounts.csv', filtered.map((account) => ({
+      code: account.code || '',
+      name: account.name || '',
+      account_type: account.account_type || '',
+      sub_type: account.sub_type || '',
+      balance: Number(account.balance || 0).toFixed(2),
+      status: account.status || '',
+    })), ['code', 'name', 'account_type', 'sub_type', 'balance', 'status']);
+  };
 
   const handleSave = async () => {
     if (!form.code || !form.name) return;
@@ -40,7 +51,7 @@ export default function ChartOfAccounts() {
         <div className="flex items-center gap-3">
           <div className="relative flex-1 max-w-xs"><MagnifyingGlass size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#434655' }} />
             <input data-testid="accounts-search" type="text" placeholder="Search by code or name..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-9 pr-4 py-2 text-sm rounded-lg focus:outline-none focus:ring-1" style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #C4C5D7', color: '#191C1E' }} /></div>
-          <button className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><Export size={18} /></button>
+          <button onClick={exportAccounts} aria-label="Export chart of accounts" className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><Export size={18} /></button>
         </div>
         <div className="rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
           {loading ? <div className="flex items-center justify-center h-48"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} /></div> : (

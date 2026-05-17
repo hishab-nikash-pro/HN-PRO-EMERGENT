@@ -1,6 +1,6 @@
 import AppShell from '../components/layout/AppShell';
 import { useNavigate } from 'react-router-dom';
-import { ChartBar, CurrencyDollar, Receipt, Package, Users, Truck, Calculator } from '@phosphor-icons/react';
+import { ChartBar, CurrencyDollar, Receipt, Package, Users, Truck, Calculator, ArrowLeft } from '@phosphor-icons/react';
 
 const reportCategories = [
   {
@@ -11,6 +11,7 @@ const reportCategories = [
       { name: 'Profit & Loss', desc: 'Income, expenses, and net profit', path: '/reports/profit-loss' },
       { name: 'Balance Sheet', desc: 'Assets, liabilities, and equity', path: '/reports/balance-sheet' },
       { name: 'Cash Flow', desc: 'Cash inflows and outflows', path: '/reports/cash-flow' },
+      { name: 'Tax Summary', desc: 'Sales tax, purchase tax, and net payable', path: '/reports/tax-summary' },
     ]
   },
   {
@@ -56,6 +57,7 @@ const reportCategories = [
     reports: [
       { name: 'AP Aging', desc: 'Vendor payables by age bucket', path: '/payables' },
       { name: 'Payment Schedule', desc: 'Upcoming vendor payments', path: '/payables' },
+      { name: 'Bank Reconciliation', desc: 'Match statement lines to payments and entries', path: '/bank-reconciliation' },
     ]
   },
 ];
@@ -67,8 +69,13 @@ export default function ReportsHub() {
     <AppShell>
       <div data-testid="reports-hub-page" className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Reports</h1>
-          <p className="text-sm mt-1" style={{ color: '#434655' }}>Financial reporting and business analytics</p>
+          <div className="flex items-center gap-3">
+            <button onClick={() => navigate('/dashboard')} className="p-2 rounded-lg hover:bg-white transition-colors" style={{ color: '#434655' }}><ArrowLeft size={20} /></button>
+            <div>
+              <h1 className="text-2xl font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Reports</h1>
+              <p className="text-sm mt-1" style={{ color: '#434655' }}>Financial reporting and business analytics</p>
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

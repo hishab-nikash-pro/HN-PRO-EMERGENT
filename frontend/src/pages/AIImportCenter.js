@@ -3,8 +3,13 @@ import { useCompany } from '../contexts/CompanyContext';
 import AppShell from '../components/layout/AppShell';
 import { useNavigate } from 'react-router-dom';
 import { Upload, Eye, Trash, CheckCircle, Clock, XCircle, Warning } from '@phosphor-icons/react';
-
-const API = process.env.REACT_APP_BACKEND_URL;
+import {
+  aiExtractDocument,
+  aiImportUpload,
+  aiUploadDelete,
+  aiUploadsList,
+  importQuickBooksDesktop
+} from '../lib/api';
 
 export default function AIImportCenter() {
   const { selectedCompany } = useCompany();
@@ -22,10 +27,7 @@ export default function AIImportCenter() {
   const loadUploads = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API}/api/companies/${selectedCompany.company_id}/ai-uploads`, {
-        credentials: 'include'
-      });
-      const data = await res.json();
+      const { data } = await aiUploadsList(selectedCompany.company_id);
       setUploads(data.data || []);
     } catch (err) {
       console.error(err);
@@ -38,34 +40,38 @@ export default function AIImportCenter() {
     if (!file) return;
     
     // Check file type
-    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf', 'text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip'];
-    if (!validTypes.includes(file.type)) {
-      alert('Unsupported file type. Please upload: Excel, CSV, PDF, PNG, JPG, or ZIP');
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf', 'text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+    const validExtensions = ['.pdf', '.png', '.jpg', '.jpeg', '.csv', '.xlsx', '.xls'];
+    const lowerName = (file.name || '').toLowerCase();
+    const hasValidExtension = validExtensions.some((extension) => lowerName.endsWith(extension));
+    if (!validTypes.includes(file.type) && !hasValidExtension) {
+      alert('Unsupported file type. Please upload: Excel, CSV, PDF, PNG, or JPG');
+      return;
+    }
+
+    if (file.size > 20 * 1024 * 1024) {
+      alert('File exceeds 20MB limit');
       return;
     }
 
     setUploading(true);
 
     try {
-      // Convert file to base64
-      const base64 = await fileToBase64(file);
+      const isQuickBooksDesktopFile = lowerName.endsWith('.iif') || lowerName.includes('quickbooks');
+      if (isQuickBooksDesktopFile) {
+        const formData = new FormData();
+        formData.append('file', file);
+        const { data: qbData } = await importQuickBooksDesktop(selectedCompany.company_id, formData);
+        const imported = qbData.imported || {};
+        alert(`QuickBooks import complete.\nCustomers: ${imported.customers || 0}\nVendors: ${imported.vendors || 0}\nProducts: ${imported.products || 0}\nInvoices: ${imported.invoices || 0}\nBills: ${imported.bills || 0}`);
+        await loadUploads();
+        return;
+      }
 
-      // Upload to backend
-      const res = await fetch(`${API}/api/companies/${selectedCompany.company_id}/ai-uploads`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          file_name: file.name,
-          file_type: file.type,
-          file_size: file.size,
-          file_base64: base64
-        })
-      });
-
-      if (!res.ok) throw new Error('Upload failed');
-
-      const upload = await res.json();
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+      uploadFormData.append('company_id', selectedCompany.company_id);
+      const { data: upload } = await aiImportUpload(uploadFormData);
 
       // Immediately process the upload
       await processUpload(upload.upload_id);
@@ -75,29 +81,23 @@ export default function AIImportCenter() {
 
     } catch (err) {
       console.error(err);
-      alert('Upload failed: ' + err.message);
+      const errorMessage = err?.response?.data?.error || err?.response?.data?.detail || err.message || 'Upload failed';
+      alert('Upload failed: ' + errorMessage);
     } finally {
       setUploading(false);
     }
   };
 
-  const fileToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result.split(',')[1]);
-      reader.onerror = reject;
-    });
-  };
-
   const processUpload = async (uploadId) => {
     try {
-      await fetch(`${API}/api/companies/${selectedCompany.company_id}/ai-uploads/${uploadId}/process`, {
-        method: 'POST',
-        credentials: 'include'
-      });
+      const formData = new FormData();
+      formData.append('upload_id', uploadId);
+      formData.append('company_id', selectedCompany.company_id);
+      await aiExtractDocument(formData);
     } catch (err) {
       console.error('Processing error:', err);
+      const errorMessage = err?.response?.data?.error || err?.response?.data?.detail || err.message || 'AI processing failed';
+      alert(errorMessage);
     }
   };
 
@@ -125,10 +125,7 @@ export default function AIImportCenter() {
   const deleteUpload = async (uploadId) => {
     if (!confirm('Delete this upload?')) return;
     try {
-      await fetch(`${API}/api/companies/${selectedCompany.company_id}/ai-uploads/${uploadId}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
+      await aiUploadDelete(selectedCompany.company_id, uploadId);
       await loadUploads();
     } catch (err) {
       console.error(err);
@@ -138,6 +135,7 @@ export default function AIImportCenter() {
   const getStatusIcon = (status) => {
     switch (status) {
       case 'ready': return <CheckCircle size={20} weight="fill" style={{ color: '#16a34a' }} />;
+      case 'pending_approval': return <Clock size={20} weight="fill" style={{ color: '#0E7490' }} />;
       case 'processing': return <Clock size={20} weight="fill" style={{ color: '#0E7490' }} />;
       case 'error': return <XCircle size={20} weight="fill" style={{ color: '#BA1A1A' }} />;
       case 'confirmed': return <CheckCircle size={20} weight="fill" style={{ color: '#0F2D5C' }} />;
@@ -178,12 +176,12 @@ export default function AIImportCenter() {
             {uploading ? 'Uploading and processing...' : 'Drop files here or click to upload'}
           </p>
           <p className="text-sm mt-1" style={{ color: '#434655' }}>
-            Supports: Excel, CSV, PDF, PNG, JPG, ZIP
+            Supports: Excel, CSV, PDF, PNG, JPG (max 20MB)
           </p>
           <input
             type="file"
             onChange={(e) => e.target.files[0] && handleFile(e.target.files[0])}
-            accept=".xlsx,.xls,.csv,.pdf,.png,.jpg,.jpeg,.zip"
+            accept=".xlsx,.xls,.csv,.pdf,.png,.jpg,.jpeg"
             className="hidden"
             id="file-upload"
             disabled={uploading}
@@ -225,6 +223,11 @@ export default function AIImportCenter() {
                         <span className="text-xs" style={{ color: '#434655' }}>
                           {u.detected_type ? u.detected_type.replace('_', ' ').toUpperCase() : 'Processing...'}
                         </span>
+                        {u.status === 'pending_approval' && (
+                          <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: '#DBEAFE', color: '#0F2D5C' }}>
+                            Pending Approval
+                          </span>
+                        )}
                         {u.confidence > 0 && (
                           <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: `${confBadge.color}20`, color: confBadge.color }}>
                             {confBadge.text} confidence
@@ -233,7 +236,7 @@ export default function AIImportCenter() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {u.status === 'ready' && (
+                      {(u.status === 'ready' || u.status === 'pending_approval') && (
                         <button
                           onClick={() => navigate(`/ai-import/review/${u.upload_id}`)}
                           className="px-3 py-1.5 rounded-lg text-xs font-medium text-white"

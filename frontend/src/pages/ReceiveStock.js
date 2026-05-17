@@ -1,322 +1,487 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useCompany } from '../contexts/CompanyContext';
-import { getStockReceipts, createStockReceipt, getVendors, getInventory } from '../lib/api';
+import { getStockReceipts, createStockReceipt, postStockReceipt, getVendors, getProducts } from '../lib/api';
 import AppShell from '../components/layout/AppShell';
-import { Plus, Trash, X, CheckCircle, Warning } from '@phosphor-icons/react';
+import { Plus, X, CheckCircle, Warning, UploadSimple } from '@phosphor-icons/react';
 
 const money = (v) => `$${(Number(v) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-const emptyRow = () => ({ item_id: '', product_name: '', quantity: '', unit_cost: '' });
+const todayLocal = () => {
+  const now = new Date();
+  const offset = now.getTimezoneOffset() * 60000;
+  return new Date(now.getTime() - offset).toISOString().slice(0, 10);
+};
+const emptyRow = () => ({ product_id: '', product_name: '', quantity: '', unit_cost: '' });
 const emptyForm = () => ({
   vendor_id: '',
   vendor_name: '',
+  supplier_name: '',
   reference: '',
-  receive_date: new Date().toISOString().split('T')[0],
+  invoice_number: '',
+  container_number: '',
+  shipment_date: '',
+  eta: '',
+  receive_date: todayLocal(),
+  warehouse: 'Main Warehouse',
   items: [emptyRow()],
   notes: '',
-  total_cost: 0,
 });
 
+const sectionBorder = { borderColor: '#D5E1EC' };
+const fieldStyle = {
+  background: '#FFFFFF',
+  border: '1px solid #B9C7D5',
+  borderRadius: '3px',
+  boxShadow: 'inset 0 1px 1px rgba(0,0,0,0.08)',
+  color: '#21384F',
+  fontSize: '12px',
+  minHeight: '25px',
+  padding: '2px 6px',
+};
+
+function ReceiptCell({ label, children }) {
+  return (
+    <div>
+      <label className="mb-1 block text-[9px] font-bold uppercase tracking-wide" style={{ color: '#526A84' }}>{label}</label>
+      {children}
+    </div>
+  );
+}
+
 export default function ReceiveStock() {
+  const navigate = useNavigate();
+  const { receiptId } = useParams();
   const { selectedCompany } = useCompany();
   const [receipts, setReceipts] = useState([]);
   const [vendors, setVendors] = useState([]);
-  const [inventory, setInventory] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showCreate, setShowCreate] = useState(false);
+  const [showCreate, setShowCreate] = useState(true);
   const [form, setForm] = useState(emptyForm());
   const [saving, setSaving] = useState(false);
+  const [postingId, setPostingId] = useState('');
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  const load = () => {
-    if (!selectedCompany) return;
+  const load = useCallback(async () => {
+    if (!selectedCompany?.company_id) return;
     setLoading(true);
-    Promise.all([
-      getStockReceipts(selectedCompany.company_id),
-      getVendors(selectedCompany.company_id),
-      getInventory(selectedCompany.company_id),
-    ])
-      .then(([r, v, i]) => { setReceipts(r.data || []); setVendors(v.data || []); setInventory(i.data || []); })
-      .catch((e) => { console.error(e); setError('Failed to load stock data'); })
-      .finally(() => setLoading(false));
-  };
-  useEffect(() => { load(); // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCompany]);
+    try {
+      const [receiptRes, vendorRes, productRes] = await Promise.all([
+        getStockReceipts(selectedCompany.company_id),
+        getVendors(selectedCompany.company_id),
+        getProducts(selectedCompany.company_id),
+      ]);
+      setReceipts(Array.isArray(receiptRes.data) ? receiptRes.data : []);
+      setVendors(Array.isArray(vendorRes.data) ? vendorRes.data : []);
+      setProducts(Array.isArray(productRes.data) ? productRes.data : []);
+    } catch (loadError) {
+      console.error(loadError);
+      setError('Failed to load receive stock data.');
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedCompany?.company_id]);
 
-  const totalCost = useMemo(() => {
-    return form.items.reduce((s, i) => s + (Number(i.quantity) || 0) * (Number(i.unit_cost) || 0), 0);
-  }, [form.items]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
-  const updateItem = (idx, field, value) => {
-    const items = [...form.items];
-    items[idx] = { ...items[idx], [field]: value };
-    if (field === 'item_id') {
-      const inv = inventory.find((i) => i.item_id === value);
-      if (inv) {
-        items[idx].product_name = inv.product_name;
-        // Auto-fill unit cost from inventory if empty
-        if (!items[idx].unit_cost && inv.unit_cost) {
-          items[idx].unit_cost = inv.unit_cost;
-        }
-      } else {
-        items[idx].product_name = '';
+  useEffect(() => {
+    if (!receiptId || loading) return;
+    requestAnimationFrame(() => {
+      const element = document.getElementById(receiptId);
+      element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }, [receiptId, receipts, loading]);
+
+  const totalCost = useMemo(
+    () => form.items.reduce((sum, item) => sum + (Number(item.quantity) || 0) * (Number(item.unit_cost) || 0), 0),
+    [form.items],
+  );
+
+  const selectedVendor = useMemo(
+    () => vendors.find((entry) => entry.vendor_id === form.vendor_id),
+    [form.vendor_id, vendors]
+  );
+
+  const updateItem = (index, field, value) => {
+    const nextItems = [...form.items];
+    nextItems[index] = { ...nextItems[index], [field]: value };
+    if (field === 'product_id') {
+      const product = products.find((entry) => entry.product_id === value);
+      nextItems[index].product_name = product?.name || nextItems[index].product_name;
+      if (!nextItems[index].unit_cost && product?.cost_price) {
+        nextItems[index].unit_cost = product.cost_price;
       }
     }
-    setForm({ ...form, items });
+    setForm((current) => ({ ...current, items: nextItems }));
   };
 
-  const addRow = () => setForm({ ...form, items: [...form.items, emptyRow()] });
-  const removeRow = (idx) => {
-    const items = form.items.filter((_, i) => i !== idx);
-    setForm({ ...form, items: items.length ? items : [emptyRow()] });
+  const addRow = () => setForm((current) => ({ ...current, items: [...current.items, emptyRow()] }));
+  const removeRow = (index) => {
+    const nextItems = form.items.filter((_, itemIndex) => itemIndex !== index);
+    setForm((current) => ({ ...current, items: nextItems.length ? nextItems : [emptyRow()] }));
   };
 
-  const validItems = form.items.filter((i) => i.item_id && Number(i.quantity) > 0);
-  const hasInvalidRow = form.items.some((i) => (i.item_id && Number(i.quantity) <= 0) || (!i.item_id && (i.quantity || i.unit_cost)));
-  const canSave = form.vendor_id && validItems.length > 0 && !saving;
+  const validItems = form.items
+    .map((item) => ({
+      ...item,
+      quantity: Number(item.quantity) || 0,
+      unit_cost: Number(item.unit_cost) || 0,
+    }))
+    .filter((item) => item.product_name.trim() && item.quantity > 0);
 
-  const resetForm = () => setForm(emptyForm());
+  const canSave = form.vendor_name.trim() && validItems.length > 0 && !saving;
 
-  const handleSave = async () => {
-    if (!canSave) return;
+  const handleSave = async (keepOpen = false) => {
+    if (!canSave || !selectedCompany?.company_id) return;
     setSaving(true);
     setError('');
     try {
       const payload = {
         ...form,
-        items: validItems.map((i) => ({
-          item_id: i.item_id,
-          product_name: i.product_name,
-          quantity: Number(i.quantity) || 0,
-          unit_cost: Number(i.unit_cost) || 0,
-        })),
+        supplier_name: selectedVendor?.company_name || form.supplier_name || form.vendor_name,
+        status: 'Draft',
+        items: validItems,
         total_cost: Number(totalCost.toFixed(2)),
       };
       await createStockReceipt(selectedCompany.company_id, payload);
-      setShowCreate(false);
-      resetForm();
-      setSuccessMsg(`Received ${validItems.length} line item(s). Inventory updated.`);
-      setTimeout(() => setSuccessMsg(''), 3500);
-      load();
-    } catch (e) {
-      console.error(e);
-      setError(e?.response?.data?.detail || 'Failed to save receipt. Please try again.');
+      setSuccessMsg('Draft stock receipt saved. Review it, then post to inventory when ready.');
+      setForm(emptyForm());
+      setShowCreate(true);
+      await load();
+      if (!keepOpen) {
+        setShowCreate(false);
+      }
+    } catch (saveError) {
+      console.error(saveError);
+      setError(saveError?.response?.data?.detail || 'Failed to save draft receipt.');
     } finally {
       setSaving(false);
     }
   };
 
+  const handlePost = async (receiptId) => {
+    if (!selectedCompany?.company_id || !receiptId) return;
+    setPostingId(receiptId);
+    setError('');
+    try {
+      await postStockReceipt(selectedCompany.company_id, receiptId);
+      setSuccessMsg('Stock receipt posted. Inventory and product stock were updated.');
+      await load();
+    } catch (postError) {
+      console.error(postError);
+      setError(postError?.response?.data?.detail || 'Failed to post stock receipt.');
+    } finally {
+      setPostingId('');
+    }
+  };
+
   const openNew = () => {
-    resetForm();
+    setForm(emptyForm());
     setError('');
     setShowCreate(true);
   };
 
+  const receiptBadge = (receipt) => {
+    const hasDraftProducts = (receipt.items || []).some((item) => item.match_status === 'draft_product');
+    if (receipt.status === 'Posted') return { text: 'Posted', background: '#DCFCE7', color: '#166534' };
+    if (hasDraftProducts) return { text: 'Needs Match', background: '#FFF7ED', color: '#C2410C' };
+    return { text: 'Draft', background: '#DBEAFE', color: '#1D4ED8' };
+  };
+
   return (
     <AppShell>
-      <div data-testid="receive-stock-page" className="space-y-5 md:space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: '#0F172A' }}>Receive Stock</h1>
-            <p className="text-sm mt-1" style={{ color: '#475569' }}>Receive inventory from vendors and auto-update stock levels</p>
+      <div data-testid="receive-stock-page" className="space-y-4">
+        <div className="rounded-[18px] border bg-white px-4 py-3 shadow-[0_8px_20px_rgba(15,45,92,0.06)]" style={sectionBorder}>
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+            <div>
+              <h1 className="text-[18px] font-bold" style={{ color: '#202020' }}>Receiving Inventory with Bill</h1>
+              <p className="mt-1 text-[12px]" style={{ color: '#5B6F85' }}>Legacy bill-style entry screen backed by the current draft receipt and posting workflow.</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => navigate('/ai-import')}
+                className="flex items-center gap-2 rounded px-3 py-2 text-[12px] font-bold"
+                style={{ background: '#FFFFFF', color: '#2B415A', border: '1px solid #B7C7D9' }}
+              >
+                <UploadSimple size={15} weight="bold" /> Upload Packing List
+              </button>
+              <button
+                data-testid="new-stock-receipt-btn"
+                onClick={openNew}
+                className="flex items-center gap-2 rounded px-3 py-2 text-[12px] font-bold text-white"
+                style={{ background: 'linear-gradient(180deg, #0F68C8 0%, #0B4D96 100%)', border: '1px solid #0B4D96' }}
+              >
+                <Plus size={15} weight="bold" /> New Draft Receipt
+              </button>
+            </div>
           </div>
-          <button data-testid="new-stock-receipt-btn" onClick={openNew}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90"
-            style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
-            <Plus size={16} weight="bold" /> Receive Stock
-          </button>
         </div>
 
         {successMsg && (
-          <div data-testid="receipt-success-toast" className="flex items-center gap-2 p-3 rounded-lg text-sm" style={{ background: '#ECFDF5', color: '#047857' }}>
+          <div className="flex items-center gap-2 rounded border px-3 py-2 text-sm" style={{ background: '#ECFDF5', color: '#047857', borderColor: '#A7F3D0' }}>
             <CheckCircle size={18} weight="fill" /> {successMsg}
           </div>
         )}
+        {error && (
+          <div className="flex items-center gap-2 rounded border px-3 py-2 text-sm" style={{ background: '#FEF2F2', color: '#B91C1C', borderColor: '#FECACA' }}>
+            <Warning size={16} weight="fill" /> {error}
+          </div>
+        )}
 
-        {/* Receipts list */}
-        <div className="rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-          {loading ? (
-            <div className="flex items-center justify-center h-48">
-              <div className="w-6 h-6 border-2 rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} />
-            </div>
-          ) : (
-            <>
-              {/* Desktop */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr style={{ background: '#F7F9FB', borderBottom: '1px solid #CBD5E1' }}>
-                      <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>Date</th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>Vendor</th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>Reference</th>
-                      <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>Items</th>
-                      <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>Total Cost</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {receipts.length === 0 ? (
-                      <tr><td colSpan={5} className="text-center py-12 text-sm" style={{ color: '#475569' }}>No stock receipts yet. Click "Receive Stock" to add one.</td></tr>
-                    ) : receipts.map((r, i) => (
-                      <tr key={r.receipt_id} style={{ background: i % 2 === 0 ? '#FFFFFF' : '#FAFBFC', borderBottom: '1px solid #F2F4F6' }}>
-                        <td className="px-4 py-3" style={{ color: '#0F172A' }}>{r.receive_date}</td>
-                        <td className="px-4 py-3 font-medium" style={{ color: '#0F172A' }}>{r.vendor_name || '—'}</td>
-                        <td className="px-4 py-3" style={{ color: '#475569' }}>{r.reference || '—'}</td>
-                        <td className="px-4 py-3 text-right" style={{ color: '#0F172A' }}>{(r.items || []).length}</td>
-                        <td className="px-4 py-3 text-right font-semibold tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#0F2D5C' }}>{money(r.total_cost)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {/* Mobile */}
-              <div className="md:hidden divide-y" style={{ borderColor: '#F2F4F6' }}>
-                {receipts.length === 0 ? (
-                  <div className="p-6 text-center text-sm" style={{ color: '#475569' }}>No stock receipts yet.</div>
-                ) : receipts.map((r) => (
-                  <div key={r.receipt_id} className="p-4 flex items-center justify-between">
-                    <div className="min-w-0 flex-1">
-                      <p className="font-semibold truncate" style={{ color: '#0F172A' }}>{r.vendor_name || '—'}</p>
-                      <p className="text-xs mt-0.5" style={{ color: '#475569' }}>{r.receive_date} • {(r.items || []).length} items{r.reference ? ` • ${r.reference}` : ''}</p>
-                    </div>
-                    <span className="font-bold tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#0F2D5C' }}>{money(r.total_cost)}</span>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Modal */}
         {showCreate && (
-          <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-start md:items-center justify-center overflow-y-auto p-3 md:p-6" style={{ background: 'rgba(15,23,42,0.5)' }}>
-            <div className="rounded-2xl w-full max-w-3xl" style={{ background: '#FFFFFF' }}>
-              {/* Header */}
-              <div className="flex items-center justify-between p-5 md:p-6" style={{ borderBottom: '1px solid #F2F4F6' }}>
-                <div>
-                  <h3 className="text-lg font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: '#0F172A' }}>Receive Stock</h3>
-                  <p className="text-xs mt-0.5" style={{ color: '#475569' }}>Record incoming inventory from a vendor</p>
-                </div>
-                <button onClick={() => setShowCreate(false)} aria-label="Close" className="p-1.5 rounded-lg" style={{ color: '#475569' }}><X size={18} /></button>
+          <div className="rounded-[18px] border bg-white p-3 shadow-[0_8px_20px_rgba(15,45,92,0.05)]" style={sectionBorder}>
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-3 text-[10px] font-bold uppercase tracking-wide" style={{ color: '#5A7088' }}>
+              <div className="flex items-center gap-4">
+                <label className="flex items-center gap-1"><input type="radio" checked readOnly /> Bill</label>
+                <label className="flex items-center gap-1"><input type="radio" readOnly /> Credit</label>
               </div>
+              <label className="flex items-center gap-1"><input type="checkbox" checked={validItems.length > 0} readOnly /> Bill Received</label>
+            </div>
 
-              <div className="p-5 md:p-6 space-y-5">
-                {error && (
-                  <div className="flex items-center gap-2 p-3 rounded-lg text-sm" style={{ background: '#FEF2F2', color: '#B91C1C' }}>
-                    <Warning size={16} weight="fill" /> {error}
-                  </div>
-                )}
-
-                {/* Header fields */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: '#475569' }}>
-                      Vendor <span style={{ color: '#B91C1C' }}>*</span>
-                    </label>
-                    <select data-testid="receipt-vendor-select" value={form.vendor_id}
-                      onChange={(e) => { const v = vendors.find(x => x.vendor_id === e.target.value); setForm({ ...form, vendor_id: e.target.value, vendor_name: v?.name || '' }); }}
-                      className="w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-1"
-                      style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #CBD5E1', color: '#0F172A' }}>
-                      <option value="">Select vendor...</option>
-                      {vendors.map(v => <option key={v.vendor_id} value={v.vendor_id}>{v.name}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: '#475569' }}>Reference / PO #</label>
-                    <input data-testid="receipt-reference-input" type="text" value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })}
-                      placeholder="Optional"
-                      className="w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-1"
-                      style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #CBD5E1', color: '#0F172A' }} />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: '#475569' }}>
-                      Receive Date <span style={{ color: '#B91C1C' }}>*</span>
-                    </label>
-                    <input data-testid="receipt-date-input" type="date" value={form.receive_date} onChange={(e) => setForm({ ...form, receive_date: e.target.value })}
-                      className="w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-1"
-                      style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #CBD5E1', color: '#0F172A' }} />
-                  </div>
-                </div>
-
-                {/* Line items */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>Line Items</label>
-                    {hasInvalidRow && (
-                      <span className="text-[11px] flex items-center gap-1" style={{ color: '#B45309' }}>
-                        <Warning size={12} weight="fill" /> Incomplete rows will be skipped
-                      </span>
-                    )}
-                  </div>
-                  {/* Desktop header */}
-                  <div className="hidden md:grid grid-cols-[1fr_100px_120px_110px_40px] gap-2 px-1 pb-2 text-[10px] font-semibold uppercase tracking-wider" style={{ color: '#475569' }}>
-                    <div>Product</div>
-                    <div className="text-right">Cases</div>
-                    <div className="text-right">Cost/Case</div>
-                    <div className="text-right">Line Total</div>
-                    <div></div>
-                  </div>
-                  <div className="space-y-2">
-                    {form.items.map((item, idx) => {
-                      const lineTotal = (Number(item.quantity) || 0) * (Number(item.unit_cost) || 0);
-                      return (
-                        <div key={idx} data-testid={`receipt-row-${idx}`} className="grid grid-cols-1 md:grid-cols-[1fr_100px_120px_110px_40px] gap-2 p-2 rounded-lg items-center" style={{ background: idx % 2 === 0 ? '#F7F9FB' : '#FFFFFF' }}>
-                          <select data-testid={`receipt-product-${idx}`} value={item.item_id} onChange={(e) => updateItem(idx, 'item_id', e.target.value)}
-                            className="px-2 py-2 text-sm rounded-md focus:outline-none focus:ring-1"
-                            style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #CBD5E1', color: '#0F172A' }}>
-                            <option value="">Select product...</option>
-                            {inventory.map(i => <option key={i.item_id} value={i.item_id}>{i.product_name}</option>)}
-                          </select>
-                          <div className="grid grid-cols-3 md:contents gap-2">
-                            <input data-testid={`receipt-qty-${idx}`} type="number" min="0" step="0.01" value={item.quantity}
-                              onChange={(e) => updateItem(idx, 'quantity', e.target.value)} placeholder="Cases"
-                              className="px-2 py-2 text-sm rounded-md text-right focus:outline-none focus:ring-1"
-                              style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #CBD5E1', color: '#0F172A' }} />
-                            <input data-testid={`receipt-cost-${idx}`} type="number" min="0" step="0.01" value={item.unit_cost}
-                              onChange={(e) => updateItem(idx, 'unit_cost', e.target.value)} placeholder="Cost per case"
-                              className="px-2 py-2 text-sm rounded-md text-right focus:outline-none focus:ring-1"
-                              style={{ background: '#FFFFFF', boxShadow: '0 0 0 1px #CBD5E1', color: '#0F172A' }} />
-                            <div className="px-2 py-2 text-sm font-semibold text-right tabular-nums self-center" style={{ fontFamily: 'Manrope, sans-serif', color: '#0F172A' }}>
-                              {money(lineTotal)}
-                            </div>
-                          </div>
-                          <button data-testid={`receipt-remove-${idx}`} onClick={() => removeRow(idx)} aria-label="Remove row"
-                            className="justify-self-end md:justify-self-center p-1.5 rounded-md transition-colors hover:bg-red-50"
-                            style={{ color: '#B91C1C' }}>
-                            <Trash size={15} />
-                          </button>
+            <div className="rounded-md border p-2" style={{ ...sectionBorder, background: '#F7FBFF' }}>
+              <div className="grid gap-3 xl:grid-cols-[430px_minmax(0,1fr)]">
+                <div className="rounded border p-3" style={{ borderColor: '#DCE6F1', background: 'linear-gradient(180deg, #F8FBFF 0%, #EEF5FC 100%)' }}>
+                  <div className="mb-2 text-[20px] leading-none" style={{ color: '#3C4C61' }}>Bill</div>
+                  <div className="grid gap-3 md:grid-cols-[1.2fr_0.8fr]">
+                    <div className="space-y-2">
+                      <ReceiptCell label="Vendor">
+                        <select
+                          value={form.vendor_id}
+                          onChange={(event) => {
+                            const vendor = vendors.find((entry) => entry.vendor_id === event.target.value);
+                            setForm((current) => ({
+                              ...current,
+                              vendor_id: event.target.value,
+                              vendor_name: vendor?.name || '',
+                              supplier_name: vendor?.company_name || vendor?.name || '',
+                            }));
+                          }}
+                          style={fieldStyle}
+                        >
+                          <option value="">Select vendor...</option>
+                          {vendors.map((vendor) => <option key={vendor.vendor_id} value={vendor.vendor_id}>{vendor.name}</option>)}
+                        </select>
+                      </ReceiptCell>
+                      <ReceiptCell label="Address">
+                        <div className="min-h-[74px] rounded border px-2 py-2 text-[11px]" style={{ borderColor: '#C6D3E0', background: '#FFFFFF', color: '#334A63' }}>
+                          {selectedVendor?.address || form.supplier_name || form.vendor_name || ''}
                         </div>
-                      );
-                    })}
+                      </ReceiptCell>
+                      <div className="grid gap-2 md:grid-cols-[0.8fr_1.2fr]">
+                        <ReceiptCell label="Terms">
+                          <input value="Consign..." readOnly style={fieldStyle} />
+                        </ReceiptCell>
+                        <ReceiptCell label="Memo">
+                          <input value={form.notes} onChange={(event) => setForm((current) => ({ ...current, notes: event.target.value }))} style={fieldStyle} />
+                        </ReceiptCell>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <ReceiptCell label="Date">
+                        <input type="date" value={form.receive_date} onChange={(event) => setForm((current) => ({ ...current, receive_date: event.target.value }))} style={fieldStyle} />
+                      </ReceiptCell>
+                      <ReceiptCell label="Ref. No.">
+                        <input value={form.reference} onChange={(event) => setForm((current) => ({ ...current, reference: event.target.value }))} style={fieldStyle} />
+                      </ReceiptCell>
+                      <ReceiptCell label="Amount Due">
+                        <input value={money(totalCost)} readOnly style={fieldStyle} />
+                      </ReceiptCell>
+                      <ReceiptCell label="Bill Due">
+                        <input type="date" value={form.eta} onChange={(event) => setForm((current) => ({ ...current, eta: event.target.value }))} style={fieldStyle} />
+                      </ReceiptCell>
+                    </div>
                   </div>
-                  <button data-testid="receipt-add-row-btn" onClick={addRow} className="mt-3 text-xs font-medium flex items-center gap-1" style={{ color: '#0F2D5C' }}>
-                    <Plus size={12} /> Add Line
-                  </button>
                 </div>
 
-                {/* Summary */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg" style={{ background: '#F7F9FB' }}>
-                  <div className="text-xs" style={{ color: '#475569' }}>
-                    <span className="font-medium">{validItems.length}</span> valid line item(s)
-                  </div>
-                  <div className="text-right">
-                    <div className="text-[11px] uppercase tracking-wider font-semibold" style={{ color: '#475569' }}>Total Cost</div>
-                    <div data-testid="receipt-total" className="text-xl font-bold tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#0F2D5C' }}>{money(totalCost)}</div>
-                  </div>
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  <ReceiptCell label="Invoice No.">
+                    <input value={form.invoice_number} onChange={(event) => setForm((current) => ({ ...current, invoice_number: event.target.value }))} style={fieldStyle} />
+                  </ReceiptCell>
+                  <ReceiptCell label="Container No.">
+                    <input value={form.container_number} onChange={(event) => setForm((current) => ({ ...current, container_number: event.target.value }))} style={fieldStyle} />
+                  </ReceiptCell>
+                  <ReceiptCell label="Warehouse">
+                    <input value={form.warehouse} onChange={(event) => setForm((current) => ({ ...current, warehouse: event.target.value }))} style={fieldStyle} />
+                  </ReceiptCell>
+                  <ReceiptCell label="Shipment Date">
+                    <input type="date" value={form.shipment_date} onChange={(event) => setForm((current) => ({ ...current, shipment_date: event.target.value }))} style={fieldStyle} />
+                  </ReceiptCell>
+                  <ReceiptCell label="ETA">
+                    <input type="date" value={form.eta} onChange={(event) => setForm((current) => ({ ...current, eta: event.target.value }))} style={fieldStyle} />
+                  </ReceiptCell>
+                  <ReceiptCell label="Supplier">
+                    <input value={form.supplier_name} onChange={(event) => setForm((current) => ({ ...current, supplier_name: event.target.value }))} style={fieldStyle} />
+                  </ReceiptCell>
                 </div>
               </div>
+            </div>
 
-              <div className="p-5 md:p-6 flex flex-col-reverse sm:flex-row justify-end gap-2" style={{ borderTop: '1px solid #F2F4F6' }}>
-                <button onClick={() => setShowCreate(false)} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ color: '#475569' }}>Cancel</button>
-                <button data-testid="save-stock-receipt-btn" onClick={handleSave} disabled={!canSave}
-                  className="px-6 py-2 rounded-lg text-sm font-medium text-white transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ background: 'linear-gradient(135deg, #0F2D5C, #0E7490)' }}>
-                  {saving ? 'Saving...' : 'Save Receipt'}
-                </button>
+            <div className="mt-2 flex flex-wrap items-center gap-6 border-b px-2 pb-1 text-[11px] font-bold" style={{ borderColor: '#D5E1EC', color: '#50657D' }}>
+              <span>Expenses</span>
+              <span style={{ color: '#2B415A' }}>{money(0)}</span>
+              <span>Items</span>
+              <span style={{ color: '#2B415A' }}>{money(totalCost)}</span>
+            </div>
+
+            <div className="mt-2 overflow-x-auto rounded border" style={{ borderColor: '#D5E1EC' }}>
+              <table className="w-full min-w-[980px] text-[12px]">
+                <thead>
+                  <tr style={{ background: '#FBFDFF', borderBottom: '1px solid #D5E1EC' }}>
+                    <th className="px-2 py-1 text-left text-[10px] font-bold uppercase tracking-wide" style={{ color: '#70859A' }}>Item</th>
+                    <th className="px-2 py-1 text-left text-[10px] font-bold uppercase tracking-wide" style={{ color: '#70859A' }}>Description</th>
+                    <th className="px-2 py-1 text-right text-[10px] font-bold uppercase tracking-wide" style={{ color: '#70859A' }}>Qty</th>
+                    <th className="px-2 py-1 text-right text-[10px] font-bold uppercase tracking-wide" style={{ color: '#70859A' }}>Cost</th>
+                    <th className="px-2 py-1 text-right text-[10px] font-bold uppercase tracking-wide" style={{ color: '#70859A' }}>Amount</th>
+                    <th className="px-2 py-1 text-center text-[10px] font-bold uppercase tracking-wide" style={{ color: '#70859A' }}>U/M</th>
+                    <th className="px-2 py-1 text-center text-[10px] font-bold uppercase tracking-wide" style={{ color: '#70859A' }}>Customer:Job</th>
+                    <th className="px-2 py-1 text-center text-[10px] font-bold uppercase tracking-wide" style={{ color: '#70859A' }}>Billable?</th>
+                    <th className="px-2 py-1 text-center text-[10px] font-bold uppercase tracking-wide" style={{ color: '#70859A' }}>X</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {form.items.map((item, index) => {
+                    const product = products.find((entry) => entry.product_id === item.product_id);
+                    return (
+                      <tr key={index} style={{ background: index % 2 === 0 ? '#FFFFFF' : '#EAF3FF', borderBottom: '1px solid #DCE6F2' }}>
+                        <td className="px-2 py-1.5 align-top">
+                          <select value={item.product_id} onChange={(event) => updateItem(index, 'product_id', event.target.value)} style={fieldStyle}>
+                            <option value="">Select product...</option>
+                            {products.map((entry) => (
+                              <option key={entry.product_id} value={entry.product_id}>
+                                {entry.name}{entry.sku ? ` (${entry.sku})` : ''}
+                              </option>
+                            ))}
+                          </select>
+                          <input className="mt-1 w-full" value={item.product_name} onChange={(event) => updateItem(index, 'product_name', event.target.value)} placeholder="Manual item name" style={fieldStyle} />
+                        </td>
+                        <td className="px-2 py-1.5 align-top">
+                          <div className="min-h-[52px] rounded border px-2 py-1 text-[11px]" style={{ borderColor: '#C6D3E0', background: '#FFFFFF', color: '#2C435B' }}>
+                            {product?.packing_text || product?.description || item.product_name || ''}
+                          </div>
+                        </td>
+                        <td className="px-2 py-1.5 align-top">
+                          <input type="number" min="0" step="0.01" value={item.quantity} onChange={(event) => updateItem(index, 'quantity', event.target.value)} className="w-full text-right" style={fieldStyle} />
+                        </td>
+                        <td className="px-2 py-1.5 align-top">
+                          <input type="number" min="0" step="0.01" value={item.unit_cost} onChange={(event) => updateItem(index, 'unit_cost', event.target.value)} className="w-full text-right" style={fieldStyle} />
+                        </td>
+                        <td className="px-2 py-1.5 text-right align-top font-semibold tabular-nums" style={{ color: '#20384F' }}>
+                          {money((Number(item.quantity) || 0) * (Number(item.unit_cost) || 0))}
+                        </td>
+                        <td className="px-2 py-1.5 text-center align-top" style={{ color: '#20384F' }}>{String(product?.unit_label || product?.unit_type || 'PCS').toUpperCase()}</td>
+                        <td className="px-2 py-1.5 text-center align-top" style={{ color: '#73889C' }}>-</td>
+                        <td className="px-2 py-1.5 text-center align-top" style={{ color: '#73889C' }}>-</td>
+                        <td className="px-2 py-1.5 text-center align-top">
+                          <button onClick={() => removeRow(index)} className="rounded p-1" style={{ color: '#B42318' }}>
+                            <X size={13} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <button onClick={addRow} className="flex items-center gap-1 rounded px-2 py-1 text-[12px] font-bold" style={{ color: '#0F4D96', border: '1px solid #B7C7D9', background: '#FFFFFF' }}>
+                <Plus size={12} /> Add Line
+              </button>
+              <div className="text-right">
+                <div className="text-[10px] font-bold uppercase tracking-wide" style={{ color: '#657B92' }}>Estimated Total Cost</div>
+                <div className="text-[20px] font-bold tabular-nums" style={{ color: '#1E3650' }}>{money(totalCost)}</div>
               </div>
+            </div>
+
+            <div className="mt-3 flex flex-wrap justify-end gap-2 border-t pt-3" style={{ borderColor: '#D5E1EC' }}>
+              <button onClick={() => { handleSave(false); }} disabled={!canSave} className="rounded px-4 py-1.5 text-[12px] font-bold" style={{ background: '#F3F6FA', color: '#40556D', border: '1px solid #C8D4E1', opacity: canSave ? 1 : 0.6 }}>
+                {saving ? 'Saving...' : 'Save & Close'}
+              </button>
+              <button onClick={() => { handleSave(true); }} disabled={!canSave} className="rounded px-4 py-1.5 text-[12px] font-bold text-white" style={{ background: 'linear-gradient(180deg, #6793D4 0%, #2E66B4 100%)', border: '1px solid #2E66B4', opacity: canSave ? 1 : 0.6 }}>
+                {saving ? 'Saving...' : 'Save & New'}
+              </button>
+              <button onClick={() => setForm(emptyForm())} className="rounded px-4 py-1.5 text-[12px] font-bold" style={{ background: '#F3F6FA', color: '#40556D', border: '1px solid #C8D4E1' }}>
+                Revert
+              </button>
             </div>
           </div>
         )}
+
+        <div className="rounded-[18px] border bg-white p-3 shadow-[0_6px_18px_rgba(15,45,92,0.04)]" style={sectionBorder}>
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-[14px] font-bold" style={{ color: '#22384F' }}>Recent Receipts</h2>
+              <p className="text-[11px]" style={{ color: '#5B7087' }}>Draft and posted receipts remain available below for review and posting.</p>
+            </div>
+          </div>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-t-transparent" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} />
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded border" style={{ borderColor: '#D5E1EC' }}>
+              <table className="w-full text-[12px]">
+                <thead>
+                  <tr style={{ background: '#FBFDFF', borderBottom: '1px solid #D5E1EC' }}>
+                    <th className="px-3 py-2 text-left text-[10px] font-bold uppercase tracking-wide" style={{ color: '#70859A' }}>Date</th>
+                    <th className="px-3 py-2 text-left text-[10px] font-bold uppercase tracking-wide" style={{ color: '#70859A' }}>Vendor</th>
+                    <th className="px-3 py-2 text-left text-[10px] font-bold uppercase tracking-wide" style={{ color: '#70859A' }}>Reference / Container</th>
+                    <th className="px-3 py-2 text-left text-[10px] font-bold uppercase tracking-wide" style={{ color: '#70859A' }}>Status</th>
+                    <th className="px-3 py-2 text-right text-[10px] font-bold uppercase tracking-wide" style={{ color: '#70859A' }}>Lines</th>
+                    <th className="px-3 py-2 text-right text-[10px] font-bold uppercase tracking-wide" style={{ color: '#70859A' }}>Total Cost</th>
+                    <th className="px-3 py-2 text-right text-[10px] font-bold uppercase tracking-wide" style={{ color: '#70859A' }}>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {receipts.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-12 text-center text-sm" style={{ color: '#475569' }}>
+                        No stock receipts yet. Upload a packing list or create a manual draft.
+                      </td>
+                    </tr>
+                  ) : receipts.map((receipt, index) => {
+                    const badge = receiptBadge(receipt);
+                    return (
+                      <tr id={receipt.receipt_id} key={receipt.receipt_id} style={{ background: index % 2 === 0 ? '#FFFFFF' : '#EDF5FF', borderBottom: '1px solid #DCE6F2' }}>
+                        <td className="px-3 py-2" style={{ color: '#20384F' }}>{receipt.receive_date || '-'}</td>
+                        <td className="px-3 py-2 font-semibold" style={{ color: '#20384F' }}>{receipt.vendor_name || '-'}</td>
+                        <td className="px-3 py-2" style={{ color: '#50657D' }}>
+                          <div>{receipt.reference || '-'}</div>
+                          {receipt.container_number ? <div className="text-[11px]">{receipt.container_number}</div> : null}
+                        </td>
+                        <td className="px-3 py-2">
+                          <span className="rounded-full px-2.5 py-1 text-[11px] font-semibold" style={{ background: badge.background, color: badge.color }}>
+                            {badge.text}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-right tabular-nums" style={{ color: '#20384F' }}>{(receipt.items || []).length}</td>
+                        <td className="px-3 py-2 text-right font-semibold tabular-nums" style={{ color: '#0F2D5C' }}>{money(receipt.total_cost)}</td>
+                        <td className="px-3 py-2 text-right">
+                          {receipt.status === 'Posted' ? (
+                            <span className="text-[11px] font-semibold" style={{ color: '#166534' }}>Posted</span>
+                          ) : (
+                            <button
+                              onClick={() => handlePost(receipt.receipt_id)}
+                              disabled={postingId === receipt.receipt_id}
+                              className="rounded px-3 py-1.5 text-[12px] font-bold text-white disabled:opacity-50"
+                              style={{ background: '#0F2D5C', border: '1px solid #0F2D5C' }}
+                            >
+                              {postingId === receipt.receipt_id ? 'Posting...' : 'Post to Inventory'}
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </AppShell>
   );

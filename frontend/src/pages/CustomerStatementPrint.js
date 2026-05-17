@@ -4,6 +4,7 @@ import { useCompany } from '../contexts/CompanyContext';
 import { getCustomerStatement } from '../lib/api';
 import AppShell from '../components/layout/AppShell';
 import { ArrowLeft, Printer } from '@phosphor-icons/react';
+import { brandFooter } from '../config/branding';
 
 const COMPANY_INFO = {
   ckfrozen: { name: 'C.K FROZEN FISH & FOOD INC', address: '168-56 Douglas Ave, Jamaica, NY-11433', phone: '718-297-2578', email: 'CKFFFUSA@OUTLOOK.COM' },
@@ -137,7 +138,7 @@ export default function CustomerStatementPrint() {
           <div style={{ borderTop: '1px solid #E6E8EA', paddingTop: '12px', fontSize: '9px', color: '#434655', lineHeight: '1.6' }}>
             <p style={{ margin: 0 }}>Please remit payment within 14 days. For questions about this statement, contact us at {info.phone} or {info.email}.</p>
             <p style={{ margin: '8px 0 0', fontWeight: 700, color: '#BA1A1A' }}>THANK YOU FOR YOUR BUSINESS</p>
-            <p style={{ margin: '8px 0 0', opacity: 0.5 }}>Hishab Nikash Pro — Powered by iAlam</p>
+            <p style={{ margin: '8px 0 0', opacity: 0.5 }}>{brandFooter}</p>
           </div>
         </div>
 

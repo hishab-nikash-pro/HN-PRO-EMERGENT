@@ -6,10 +6,11 @@ import { aiUploadGet, aiUploadConfirm, aiUploadProcess, aiUploadDelete } from '.
 import { ArrowLeft, FloppyDisk, CheckCircle, Trash, ArrowClockwise, Warning, Plus, X } from '@phosphor-icons/react';
 
 const DESTINATIONS = [
-  { value: 'invoice', label: 'Sales Invoice', hint: 'Money coming IN from a customer' },
+  { value: 'invoice', label: 'Sales Invoice', hint: 'Create a draft invoice for review before sending or posting.' },
   { value: 'bill', label: 'Vendor Bill', hint: 'Money owed to a vendor' },
   { value: 'expense', label: 'Expense', hint: 'Paid expense / receipt' },
-  { value: 'stock_receipt', label: 'Stock Receipt', hint: 'Goods received into inventory' },
+  { value: 'stock_receipt', label: 'Stock Receipt', hint: 'Create a draft stock receipt. Inventory updates only after manual posting.' },
+  { value: 'customer_payment', label: 'Customer Payment Draft', hint: 'Extract a check or payment and prefill the payment screen without posting it.' },
 ];
 
 const DEFAULT_BY_DESTINATION = {
@@ -43,9 +44,22 @@ const DEFAULT_BY_DESTINATION = {
   }),
   stock_receipt: () => ({
     vendor_name: '',
+    supplier_name: '',
     date: new Date().toISOString().slice(0, 10),
     reference: '',
+    invoice_number: '',
+    container_number: '',
+    shipment_date: '',
+    eta: '',
     items: [{ description: '', quantity: 1, unit_cost: 0 }],
+  }),
+  customer_payment: () => ({
+    customer_name: '',
+    payment_date: new Date().toISOString().slice(0, 10),
+    amount: 0,
+    payment_method: 'Check',
+    reference: '',
+    memo: '',
   }),
 };
 
@@ -77,7 +91,7 @@ export default function AIImportReview() {
 
       // Pick initial destination from AI's detected type
       const detected = u.detected_type || 'expense';
-      const mapped = ['invoice', 'bill', 'expense', 'stock_receipt'].includes(detected) ? detected : 'expense';
+      const mapped = ['invoice', 'bill', 'expense', 'stock_receipt', 'customer_payment'].includes(detected) ? detected : 'expense';
       setDestination(mapped);
 
       // Merge AI-extracted data into defaults for that destination
@@ -96,7 +110,7 @@ export default function AIImportReview() {
     const defaults = DEFAULT_BY_DESTINATION[newDest]();
     // Preserve any compatible fields from the current state
     const merged = { ...defaults };
-    ['vendor_name', 'customer_name', 'reference', 'memo', 'total', 'amount'].forEach((k) => {
+    ['vendor_name', 'customer_name', 'reference', 'memo', 'total', 'amount', 'payment_date', 'payment_method'].forEach((k) => {
       if (fields[k] !== undefined && merged[k] !== undefined) merged[k] = fields[k];
     });
     // If switching to expense and we had a total, use it as amount
@@ -170,7 +184,9 @@ export default function AIImportReview() {
       } else if (destination === 'expense') {
         navigate('/expenses');
       } else if (destination === 'stock_receipt') {
-        navigate('/inventory');
+        navigate('/receive-stock');
+      } else if (destination === 'customer_payment') {
+        navigate('/customer-payments/new', { state: { draftPayment: data } });
       } else {
         navigate('/ai-import');
       }
@@ -348,6 +364,9 @@ export default function AIImportReview() {
               {destination === 'stock_receipt' && (
                 <StockReceiptForm fields={fields} setField={setField} setItemField={setItemField} addItem={addItem} removeItem={removeItem} />
               )}
+              {destination === 'customer_payment' && (
+                <CustomerPaymentDraftForm fields={fields} setField={setField} />
+              )}
             </div>
 
             {/* Actions */}
@@ -504,9 +523,16 @@ function StockReceiptForm({ fields, setField, setItemField, addItem, removeItem 
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
         <TextField label="Vendor name" value={fields.vendor_name} onChange={(v) => setField('vendor_name', v)} testId="field-vendor-name" />
+        <TextField label="Supplier name" value={fields.supplier_name} onChange={(v) => setField('supplier_name', v)} testId="field-supplier-name" />
         <TextField label="Receive date" type="date" value={fields.date} onChange={(v) => setField('date', v)} testId="field-date" />
+        <TextField label="Shipment date" type="date" value={fields.shipment_date} onChange={(v) => setField('shipment_date', v)} testId="field-shipment-date" />
+        <TextField label="ETA" type="date" value={fields.eta} onChange={(v) => setField('eta', v)} testId="field-eta" />
+        <TextField label="Invoice #" value={fields.invoice_number} onChange={(v) => setField('invoice_number', v)} testId="field-invoice-number" />
         <div className="col-span-2">
           <TextField label="Reference" value={fields.reference} onChange={(v) => setField('reference', v)} testId="field-reference" />
+        </div>
+        <div className="col-span-2">
+          <TextField label="Container #" value={fields.container_number} onChange={(v) => setField('container_number', v)} testId="field-container-number" />
         </div>
       </div>
       <ItemsTable
@@ -514,12 +540,38 @@ function StockReceiptForm({ fields, setField, setItemField, addItem, removeItem 
         columns={[
           { key: 'description', label: 'Product', type: 'text' },
           { key: 'quantity', label: 'Cases', type: 'number' },
+          { key: 'net_weight', label: 'Net KGS', type: 'number' },
           { key: 'unit_cost', label: 'Unit cost', type: 'number' },
         ]}
         setItemField={setItemField}
         addItem={addItem}
         removeItem={removeItem}
       />
+    </div>
+  );
+}
+
+function CustomerPaymentDraftForm({ fields, setField }) {
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <TextField label="Customer name" value={fields.customer_name} onChange={(v) => setField('customer_name', v)} testId="field-customer-name" />
+      <TextField label="Payment date" type="date" value={fields.payment_date} onChange={(v) => setField('payment_date', v)} testId="field-payment-date" />
+      <TextField label="Amount" type="number" value={fields.amount} onChange={(v) => setField('amount', v)} testId="field-payment-amount" />
+      <TextField label="Payment method" value={fields.payment_method} onChange={(v) => setField('payment_method', v)} testId="field-payment-method" />
+      <div className="col-span-2">
+        <TextField label="Reference / Check #" value={fields.reference} onChange={(v) => setField('reference', v)} testId="field-payment-reference" />
+      </div>
+      <div className="col-span-2">
+        <label className={labelCls} style={labelStyle}>Memo</label>
+        <textarea
+          value={fields.memo || ''}
+          onChange={(e) => setField('memo', e.target.value)}
+          rows={3}
+          className={inputCls}
+          style={inputStyle}
+          data-testid="field-payment-memo"
+        />
+      </div>
     </div>
   );
 }

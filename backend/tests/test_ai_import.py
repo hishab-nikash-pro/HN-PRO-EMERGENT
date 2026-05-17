@@ -6,7 +6,7 @@ import time
 import pytest
 import requests
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://business-ledger-113.preview.emergentagent.com").rstrip("/")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "http://127.0.0.1:8001").rstrip("/")
 TOKEN = "test_session_ukrrqssgkvg"
 COMPANY_ID = "ckfrozen"
 HEADERS = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}

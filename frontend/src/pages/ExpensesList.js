@@ -1,18 +1,23 @@
 import { useEffect, useState } from 'react';
 import { useCompany } from '../contexts/CompanyContext';
-import { getExpenses } from '../lib/api';
+import ConfirmDeleteModal from '../components/common/ConfirmDeleteModal';
+import { deleteExpense, getExpenses } from '../lib/api';
 import AppShell from '../components/layout/AppShell';
 import { useNavigate } from 'react-router-dom';
-import { Plus, MagnifyingGlass, Export, Receipt } from '@phosphor-icons/react';
+import { Plus, MagnifyingGlass, Export, Receipt, Trash } from '@phosphor-icons/react';
 import DateFilterPreset from '../components/DateFilterPreset';
+import { downloadCSV } from '../lib/exportUtils';
 
 export default function ExpensesList() {
-  const { selectedCompany } = useCompany();
+  const { selectedCompany, can } = useCompany();
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [feedback, setFeedback] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,11 +42,52 @@ export default function ExpensesList() {
 
   const totalAmount = filtered.reduce((s, e) => s + (e.amount || 0), 0);
   const categories = [...new Set(expenses.map(e => e.category).filter(Boolean))];
+  const exportExpenses = () => {
+    downloadCSV('expenses.csv', filtered.map((expense) => ({
+      expense_date: expense.expense_date || '',
+      vendor_name: expense.vendor_name || '',
+      category: expense.category || '',
+      payment_account: expense.payment_account || '',
+      payment_method: expense.payment_method || '',
+      reference_number: expense.reference_number || '',
+      amount: Number(expense.amount || 0).toFixed(2),
+      status: expense.status || '',
+    })), ['expense_date', 'vendor_name', 'category', 'payment_account', 'payment_method', 'reference_number', 'amount', 'status']);
+  };
+
+  const reloadExpenses = async () => {
+    if (!selectedCompany?.company_id) return;
+    setLoading(true);
+    try {
+      const response = await getExpenses(selectedCompany.company_id, categoryFilter || undefined);
+      setExpenses(response.data || []);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteExpense = async () => {
+    if (!deleteTarget || !selectedCompany?.company_id) return;
+    setDeleting(true);
+    try {
+      await deleteExpense(selectedCompany.company_id, deleteTarget.expense_id);
+      await reloadExpenses();
+      setFeedback({ type: 'success', message: 'Expense moved to deleted records.' });
+      setDeleteTarget(null);
+    } catch (error) {
+      console.error(error);
+      setFeedback({ type: 'error', message: error?.response?.data?.detail || 'Unable to delete this expense.' });
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <AppShell>
       <div data-testid="expenses-list-page" className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>Expenses</h1>
             <p className="text-sm mt-1" style={{ color: '#434655' }}>Track and manage business expenses</p>
@@ -56,8 +102,14 @@ export default function ExpensesList() {
           </button>
         </div>
 
+        {feedback && (
+          <div className="rounded-2xl px-4 py-3 text-sm font-medium" style={{ background: feedback.type === 'error' ? '#FEF2F2' : '#ECFDF3', color: feedback.type === 'error' ? '#B42318' : '#027A48' }}>
+            {feedback.message}
+          </div>
+        )}
+
         {/* Summary */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <div className="rounded-2xl p-5" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
             <p className="text-xs font-medium uppercase tracking-wider" style={{ color: '#434655' }}>Total Expenses</p>
             <p className="text-2xl font-bold mt-1 tabular-nums" style={{ fontFamily: 'Manrope, sans-serif', color: '#191C1E' }}>
@@ -81,7 +133,7 @@ export default function ExpensesList() {
             storageKey="expenses_date_filter"
             defaultPreset="this_month"
           />
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap">
             <div className="relative flex-1 max-w-xs">
               <MagnifyingGlass size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#434655' }} />
               <input data-testid="expenses-search" type="text" placeholder="Search expenses..." value={search}
@@ -96,18 +148,19 @@ export default function ExpensesList() {
               <option value="">All Categories</option>
             {categories.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
-          <button className="p-2 rounded-lg hover:bg-white transition-colors" style={{ color: '#434655' }}><Export size={18} /></button>
+          <button onClick={exportExpenses} aria-label="Export expenses" className="p-2 rounded-lg hover:bg-white transition-colors" style={{ color: '#434655' }}><Export size={18} /></button>
           </div>
         </div>
 
         {/* Table */}
-        <div className="rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+        <div className="hidden md:block rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
           {loading ? (
             <div className="flex items-center justify-center h-48">
               <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} />
             </div>
           ) : (
-            <table className="w-full text-sm">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[1000px] text-sm">
               <thead>
                 <tr style={{ background: '#F7F9FB', borderBottom: '1px solid #C4C5D7' }}>
                   <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Date</th>
@@ -118,11 +171,12 @@ export default function ExpensesList() {
                   <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Ref #</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Amount</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Status</th>
+                  <th className="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#434655' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
-                  <tr><td colSpan={8} className="text-center py-12 text-sm" style={{ color: '#434655' }}>No expenses found</td></tr>
+                  <tr><td colSpan={9} className="text-center py-12 text-sm" style={{ color: '#434655' }}>No expenses found</td></tr>
                 ) : filtered.map((e, i) => (
                   <tr key={e.expense_id} data-testid={`expense-row-${e.expense_id}`}
                     onClick={() => navigate(`/expenses/${e.expense_id}`)}
@@ -142,12 +196,67 @@ export default function ExpensesList() {
                     <td className="px-4 py-3">
                       <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: '#dcfce7', color: '#16a34a' }}>{e.status}</span>
                     </td>
+                    <td className="px-4 py-3 text-center">
+                      {can.admin ? (
+                        <button
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setDeleteTarget(e);
+                          }}
+                          className="rounded-lg p-1.5 hover:bg-[#FEF2F2]"
+                          style={{ color: '#B42318' }}
+                        >
+                          <Trash size={14} />
+                        </button>
+                      ) : null}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
+
+        <div className="space-y-3 md:hidden">
+          {loading ? (
+            <div className="flex h-40 items-center justify-center rounded-xl bg-white">
+              <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#0F2D5C', borderTopColor: 'transparent' }} />
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="rounded-xl p-6 text-center text-sm" style={{ background: '#FFFFFF', color: '#434655' }}>No expenses found</div>
+          ) : filtered.map((expense) => (
+            <button key={expense.expense_id} onClick={() => navigate(`/expenses/${expense.expense_id}`)} className="w-full rounded-xl p-4 text-left" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-semibold truncate" style={{ color: '#191C1E' }}>{expense.vendor_name || expense.category || 'Expense'}</p>
+                  <p className="mt-1 text-sm" style={{ color: '#64748B' }}>{expense.expense_date} • {expense.category || 'General'}</p>
+                  <p className="mt-1 truncate text-xs" style={{ color: '#64748B' }}>{expense.payment_method || '—'} • Ref {expense.reference_number || '—'}</p>
+                </div>
+                <span className="text-[11px] font-semibold px-2 py-1 rounded-full" style={{ background: '#dcfce7', color: '#16a34a' }}>{expense.status}</span>
+              </div>
+              <div className="mt-3 flex items-center justify-between text-sm">
+                <span style={{ color: '#64748B' }}>Amount</span>
+                <span className="font-semibold" style={{ color: '#191C1E' }}>${(expense.amount || 0).toFixed(2)}</span>
+              </div>
+              {can.admin && (
+                <div className="mt-3 flex justify-end">
+                  <button
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setDeleteTarget(expense);
+                    }}
+                    className="rounded-lg px-3 py-1.5 text-xs font-semibold"
+                    style={{ background: '#FEF2F2', color: '#B42318' }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+        <ConfirmDeleteModal open={Boolean(deleteTarget)} onCancel={() => setDeleteTarget(null)} onConfirm={handleDeleteExpense} loading={deleting} />
       </div>
     </AppShell>
   );

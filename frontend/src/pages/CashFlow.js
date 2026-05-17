@@ -5,6 +5,7 @@ import AppShell from '../components/layout/AppShell';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Export, Printer } from '@phosphor-icons/react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, ReferenceLine } from 'recharts';
+import { downloadCSV, printReport } from '../lib/exportUtils';
 
 export default function CashFlow() {
   const { selectedCompany } = useCompany();
@@ -29,6 +30,15 @@ export default function CashFlow() {
 
   const d = data || {};
   const op = d.operating_activities || {};
+  const exportCashFlow = () => {
+    const rows = (d.monthly_data || []).map((row) => ({
+      month: row.month || '',
+      inflow: Number(row.inflow || 0).toFixed(2),
+      outflow: Number(row.outflow || 0).toFixed(2),
+      net: Number((row.inflow || 0) - (row.outflow || 0)).toFixed(2),
+    }));
+    downloadCSV('cash-flow.csv', rows, ['month', 'inflow', 'outflow', 'net']);
+  };
 
   return (
     <AppShell>
@@ -42,8 +52,8 @@ export default function CashFlow() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><Export size={18} /></button>
-            <button className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><Printer size={18} /></button>
+            <button onClick={exportCashFlow} aria-label="Export cash flow" className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><Export size={18} /></button>
+            <button onClick={printReport} aria-label="Print cash flow" className="p-2 rounded-lg hover:bg-white" style={{ color: '#434655' }}><Printer size={18} /></button>
           </div>
         </div>
 
